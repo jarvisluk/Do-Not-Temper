@@ -386,6 +386,33 @@ body {
   color: var(--text-dim);
 }
 
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--text-dim);
+  transition: color 150ms ease;
+}
+
+.github-link:hover,
+.github-link:focus-visible {
+  color: var(--text);
+}
+
+.github-link:focus-visible {
+  outline: none;
+}
+
+.github-icon {
+  flex: 0 0 auto;
+}
+
 /* ---------- Preview (sticker itself keeps its hard sticker look) ---------- */
 .preview {
   display: flex;
