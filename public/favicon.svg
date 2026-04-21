@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Do Not Tamper">
+  <defs>
+    <!-- Holographic gold gradient matching the "gold" theme in template.ts -->
+    <linearGradient id="holo" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#cfb468"/>
+      <stop offset="35%"  stop-color="#eddb9a"/>
+      <stop offset="65%"  stop-color="#a67b34"/>
+      <stop offset="100%" stop-color="#eddb9a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- White canvas -->
+  <rect width="64" height="64" rx="10" ry="10" fill="#ffffff"/>
+
+  <!-- Gold holographic sticker in the top-left corner.
+       Aspect ratio matches src/assets/sticker.svg (1268 / 1878 ≈ 0.675). -->
+  <rect x="10" y="10" width="27" height="40" rx="2" ry="2" fill="url(#holo)"/>
+</svg>

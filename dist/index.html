@@ -3,39 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
+    <meta name="theme-color" content="#cfb468" />
     <title>Do Not Tamper — Sticker Customizer</title>
-    <script type="module" crossorigin src="./assets/index-BrATiRqB.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-0PDBGFf8.css">
+    <script type="module" crossorigin src="./assets/index-BBI6ZVx-.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-_j2vYnxe.css">
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">DNT</span>
-        <div class="brand-text">
-          <h1>Do Not Tamper</h1>
-          <p>Custom sticker template tool</p>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <button id="btn-reset" class="btn btn-ghost" type="button">Reset</button>
-        <button id="btn-download-svg" class="btn btn-secondary" type="button">Download SVG</button>
-        <button id="btn-download-png" class="btn btn-primary" type="button">Download PNG</button>
-      </div>
-    </header>
-
     <main class="app">
+      <section class="preview">
+        <div class="preview-stage">
+          <div id="sticker-mount" class="sticker-mount"></div>
+        </div>
+      </section>
+
       <aside class="controls">
+        <h1 class="controls-title">Customize Sticker</h1>
+
+        <section class="control-group">
+          <h2>Gradient theme</h2>
+          <div class="field">
+            <div id="input-gradient" class="swatch-list" role="radiogroup" aria-label="Gradient theme"></div>
+            <span class="field-hint">Controls the animated holo stripe</span>
+          </div>
+        </section>
+
         <section class="control-group">
           <h2>Text</h2>
           <label class="field">
             <span class="field-label">Title</span>
             <input id="input-title" type="text" maxlength="24" autocomplete="off" />
-            <span class="field-hint">OCR font · auto-shrinks for long text</span>
           </label>
           <label class="field">
             <span class="field-label">Serial number</span>
             <input id="input-serial" type="text" maxlength="24" autocomplete="off" />
-            <span class="field-hint">DOTTY font · hex-style code</span>
           </label>
           <label class="field">
             <span class="field-label">Tracking line 1</span>
@@ -51,33 +53,19 @@
         </section>
 
         <section class="control-group">
-          <h2>Appearance</h2>
-          <label class="field">
-            <span class="field-label">Accent color</span>
-            <div class="color-row">
-              <input id="input-accent" type="color" value="#FF0000" />
-              <input id="input-accent-text" type="text" maxlength="7" value="#FF0000" />
-            </div>
-            <span class="field-hint">Recolors the large "E" logo</span>
-          </label>
-          <label class="field">
-            <span class="field-label">Gradient theme</span>
-            <select id="input-gradient"></select>
-            <span class="field-hint">Controls the animated holo stripe</span>
-          </label>
+          <h2>Export Tape</h2>
+          <div class="export-row">
+            <button id="btn-download-png" class="btn btn-highlight" type="button">Save PNG</button>
+            <button id="btn-download-svg" class="btn btn-ghost" type="button">Save SVG</button>
+            <button id="btn-download-pdf" class="btn btn-ghost" type="button">Save PDF</button>
+          </div>
+          <button id="btn-reset" class="btn btn-ghost btn-block" type="button">Reset</button>
         </section>
 
         <footer class="controls-footer">
           <p>Template based on the original "Do Not Tamper" pen by Richard Rose (MIT).</p>
         </footer>
       </aside>
-
-      <section class="preview">
-        <div class="preview-stage">
-          <div id="sticker-mount" class="sticker-mount"></div>
-        </div>
-        <p class="preview-caption">Live preview · 1268 × 1878</p>
-      </section>
     </main>
 
   </body>
