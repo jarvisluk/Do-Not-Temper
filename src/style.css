@@ -1,0 +1,436 @@
+/* =============================================================
+ * Sticker-based design tokens
+ * The SVG preview still uses the strict sticker palette derived from
+ * src/assets/sticker.svg. The surrounding app chrome (control panel,
+ * page background) uses a soft, modern neutral palette so the card
+ * visually echoes the reference "Customize Tape" mock.
+ * =============================================================*/
+:root {
+  color-scheme: light;
+
+  /* Raw sticker palette (used inside the SVG preview) */
+  --sticker-paper: #ffffff;
+  --sticker-ink: #000000;
+  --sticker-red: #ff0000;
+  --sticker-gold: #cfb468;
+  --sticker-gold-light: #eddb9a;
+  --sticker-gold-dark: #a67b34;
+
+  /* App chrome (control panel) palette */
+  --app-bg: #ececec;
+  --panel-bg: #ffffff;
+  --panel-border: rgba(0, 0, 0, 0.06);
+  --field-bg: #f5f5f5;
+  --field-border: #e5e5e5;
+  --field-border-focus: #111111;
+  --text: #111111;
+  --text-dim: #8a8a8a;
+  --text-section: #6b6b6b;
+  --divider: #ececec;
+  --accent: var(--sticker-red);
+  --accent-soft: #fff1f1;
+  --highlight: #ffd60a;
+
+  /* Gradient theme (synced from JS on theme change).
+   * Gradient stops drive the sticker preview; --theme-solid is a single
+   * representative color derived from the stops and is used for solid
+   * UI chrome (e.g. the primary button). */
+  --theme-stop-1: #cfb468;
+  --theme-stop-2: #eddb9a;
+  --theme-stop-3: #a67b34;
+  --theme-stop-4: #eddb9a;
+  --theme-solid: #cfb468;
+  --theme-solid-hover: #a67b34;
+  --theme-fg: #111111;
+  --theme-shadow: 0 6px 16px rgba(207, 180, 104, 0.28),
+    0 2px 6px rgba(207, 180, 104, 0.22);
+
+  /* Shape tokens */
+  --radius-card: 20px;
+  --radius-field: 12px;
+  --radius-chip: 14px;
+  --radius-btn: 12px;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-preview: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  /* Typography */
+  --mono: "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+  --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--app-bg);
+  color: var(--text);
+  font-family: var(--ui-font);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Layout ---------- */
+.app {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 32px;
+  padding: 32px;
+  min-height: 100vh;
+}
+
+/* ---------- Control panel card ---------- */
+.controls {
+  width: 360px;
+  flex: 0 0 auto;
+  padding: 24px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.controls-title {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+
+/* Section groups separated by thin dividers */
+.control-group {
+  padding: 4px 0;
+}
+
+.control-group + .control-group {
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--divider);
+}
+
+.control-group h2 {
+  margin: 0 0 14px 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-section);
+  background: transparent;
+  padding: 0;
+  display: block;
+}
+
+/* ---------- Fields ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.field-hint {
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.85;
+}
+
+.field input[type="text"],
+.field select {
+  appearance: none;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-field);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.field input[type="text"]:hover,
+.field select:hover {
+  border-color: #d4d4d4;
+}
+
+.field input[type="text"]:focus,
+.field select:focus {
+  background: #ffffff;
+  border-color: var(--field-border-focus);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.field select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text) 50%),
+    linear-gradient(135deg, var(--text) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: var(--field-bg);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: var(--radius-btn);
+  font-family: var(--ui-font);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  transition: transform 0.06s ease, background-color 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  background: #ebebeb;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-primary {
+  background: var(--theme-solid);
+  color: var(--theme-fg);
+  border-color: transparent;
+  box-shadow: var(--theme-shadow);
+  transition: transform 0.06s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--theme-solid-hover);
+  color: var(--theme-fg);
+}
+
+.btn-secondary {
+  background: #111111;
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background: #2a2a2a;
+  color: #ffffff;
+}
+
+/* Highlight button: solid pill used for the default export action.
+ * Recolors to the current Gradient theme so the "Save PNG" selected state
+ * visually echoes the sticker's holo stripe. */
+.btn-highlight {
+  background: var(--theme-solid);
+  color: var(--theme-fg);
+  border-color: transparent;
+  box-shadow: var(--theme-shadow);
+  transition: transform 0.06s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-highlight:hover {
+  background: var(--theme-solid-hover);
+  color: var(--theme-fg);
+}
+
+.btn-highlight:focus-visible {
+  box-shadow: 0 0 0 3px var(--theme-solid);
+}
+
+.btn-ghost {
+  background: var(--field-bg);
+  color: var(--text);
+  border-color: var(--field-border);
+}
+
+.btn-ghost:hover {
+  background: #ebebeb;
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 14px;
+}
+
+.export-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.export-row .btn {
+  padding: 12px 10px;
+  font-weight: 800;
+}
+
+/* ---------- Gradient theme swatches (chip list) ---------- */
+.swatch-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.swatch {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-chip);
+  color: var(--text);
+  font-family: var(--ui-font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.06s ease, background-color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.swatch:hover {
+  background: #ebebeb;
+  border-color: #d4d4d4;
+}
+
+.swatch:active {
+  transform: translateY(1px);
+}
+
+.swatch-chip {
+  display: block;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--swatch-gradient, var(--sticker-gold));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.swatch-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: none;
+}
+
+/* Selected chip: thick dark ring with a soft inset halo */
+.swatch.is-selected {
+  background: #ffffff;
+  border-color: #111111;
+  box-shadow: 0 0 0 2px #111111, inset 0 0 0 2px #ffffff;
+}
+
+.swatch.is-selected .swatch-chip {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.swatch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- Footer ---------- */
+.controls-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+}
+
+.controls-footer p {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ---------- Preview (sticker itself keeps its hard sticker look) ---------- */
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(420px, calc(100vw - 64px));
+  flex: 0 0 auto;
+}
+
+.preview-stage {
+  width: 100%;
+  aspect-ratio: 1268 / 1878;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-preview);
+  overflow: hidden;
+  display: grid;
+  place-items: stretch;
+}
+
+.sticker-mount {
+  width: 100%;
+  height: 100%;
+}
+
+.sticker-mount svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .app {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .preview,
+  .controls {
+    width: 100%;
+    max-width: 520px;
+  }
+}

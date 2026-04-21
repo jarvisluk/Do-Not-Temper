@@ -1,1 +1,12 @@
 .DS_Store
+node_modules
+dist
+dist-ssr
+*.local
+.vite
+
+# Playwright CLI logs/snapshots
+.playwright-cli/
+
+# Local scratch/output
+output/
