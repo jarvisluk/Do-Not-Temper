@@ -7,7 +7,7 @@ export type GradientTheme = {
 };
 
 export const GRADIENT_THEMES: GradientTheme[] = [
-  { id: "gold", label: "Gold (default)", stops: ["#cfb468", "#eddb9a", "#a67b34", "#eddb9a"] },
+  { id: "gold", label: "Gold", stops: ["#cfb468", "#eddb9a", "#a67b34", "#eddb9a"] },
   { id: "silver", label: "Silver", stops: ["#8a8a8a", "#e8e8e8", "#4a4a4a", "#e8e8e8"] },
   { id: "holographic", label: "Holographic", stops: ["#ff6ec7", "#7afcff", "#feff9c", "#a06bff"] },
   { id: "emerald", label: "Emerald", stops: ["#1f6f4a", "#a8e6c1", "#0a3f2a", "#a8e6c1"] },

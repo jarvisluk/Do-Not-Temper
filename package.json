@@ -6,12 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "cf:dev": "npm run build && wrangler dev"
   },
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.6.3",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "wrangler": "^4.84.0"
   },
   "dependencies": {
     "jspdf": "^4.2.1"

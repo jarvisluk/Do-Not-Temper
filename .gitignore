@@ -10,3 +10,7 @@ dist-ssr
 
 # Local scratch/output
 output/
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
