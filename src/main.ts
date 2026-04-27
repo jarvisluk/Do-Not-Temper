@@ -18,7 +18,19 @@ const template = StickerTemplate.create();
 template.applyAll(state);
 const stickerMount = $("#sticker-mount");
 template.mountInto(stickerMount);
-setupHighlightTracking(stickerMount);
+
+const highlightSlider = $<HTMLInputElement>("#input-highlight");
+const trackBtn = $<HTMLButtonElement>("#btn-track");
+const highlightControl = setupHighlightTracking(stickerMount);
+
+highlightSlider.addEventListener("input", () => {
+  const t = Number(highlightSlider.value) / 100;
+  highlightControl.setManualPosition(t);
+});
+
+trackBtn.addEventListener("click", () => {
+  highlightControl.startTracking();
+});
 
 const titleInput = $<HTMLInputElement>("#input-title");
 const serialInput = $<HTMLInputElement>("#input-serial");
@@ -76,8 +88,8 @@ function applyThemeToChrome(themeId: string): void {
   const theme = GRADIENT_THEMES.find((t) => t.id === themeId) ?? GRADIENT_THEMES[0];
   // stops: [primary, light, dark, light-echo]. The primary stop is each
   // theme's brand color (e.g. gold, rose, ice-blue) and reads best as a
-  // solid button. stops[2] is the darker companion used for hover.
-  const [primary, , dark] = theme.stops;
+  // solid button. We slightly darken it for the hover state.
+  const [primary] = theme.stops;
   const root = document.documentElement;
   const [c1, c2, c3, c4] = theme.stops;
   root.style.setProperty("--theme-stop-1", c1);
@@ -86,7 +98,7 @@ function applyThemeToChrome(themeId: string): void {
   root.style.setProperty("--theme-stop-4", c4);
 
   const solid = ensureSaturated(primary);
-  const solidHover = ensureDifferent(dark, solid);
+  const solidHover = shadeHex(solid, -0.12);
   root.style.setProperty("--theme-solid", solid);
   root.style.setProperty("--theme-solid-hover", solidHover);
 
@@ -112,13 +124,6 @@ function ensureSaturated(hex: string): string {
   return hex;
 }
 
-/** Makes sure the hover color is distinguishable from the base color. */
-function ensureDifferent(hover: string, base: string): string {
-  if (hover.toLowerCase() === base.toLowerCase()) {
-    return shadeHex(base, -0.15);
-  }
-  return hover;
-}
 
 /** Picks black or white text based on luminance of a single background color. */
 function contrastOn(hex: string): string {
@@ -190,6 +195,9 @@ $("#btn-reset").addEventListener("click", () => {
   serialInput.value = state.serial;
   track1Input.value = state.track1;
   track2Input.value = state.track2;
+  highlightSlider.value = "50";
+  highlightControl.stopTracking();
+  highlightControl.setManualPosition(0.5);
   updateSwatchSelection();
   applyThemeToChrome(state.gradientId);
   template.applyAll(state);
@@ -251,26 +259,36 @@ function randomHex(len: number): string {
   return out;
 }
 
+type HighlightControl = {
+  setManualPosition: (t: number) => void;
+  startTracking: () => void;
+  stopTracking: () => void;
+};
+
 /**
- * Wires pointer events on the sticker preview so the gold highlight band
- * follows the cursor. Leaving the sticker releases control back to the
- * built-in SMIL auto-animation.
+ * Wires pointer events so the highlight band follows the cursor while
+ * tracking is active. Clicking anywhere on the page locks the angle.
  */
-function setupHighlightTracking(mount: HTMLElement): void {
+function setupHighlightTracking(mount: HTMLElement): HighlightControl {
   let targetT: number | null = null;
   let currentT = 0.5;
   let rafHandle = 0;
+  let pointerActive = false;
   let tracking = false;
 
   const LERP = 0.2;
   const EPSILON = 0.0015;
 
+  const setButtonActive = (active: boolean): void => {
+    trackBtn.classList.toggle("is-tracking", active);
+    trackBtn.textContent = active ? "Click to lock" : "Follow cursor";
+  };
+
   const tick = (): void => {
     rafHandle = 0;
     if (targetT === null) {
-      // Pointer has left. Let the auto animation take over again.
       template.setHighlightPosition(null);
-      tracking = false;
+      pointerActive = false;
       return;
     }
     currentT += (targetT - currentT) * LERP;
@@ -287,29 +305,56 @@ function setupHighlightTracking(mount: HTMLElement): void {
     if (!rafHandle) rafHandle = requestAnimationFrame(tick);
   };
 
-  mount.addEventListener("pointermove", (event) => {
+  const lockPosition = (): void => {
+    if (!tracking) return;
+    tracking = false;
+    setButtonActive(false);
+    if (targetT !== null) {
+      currentT = targetT;
+      template.setHighlightPosition(currentT);
+      highlightSlider.value = String(Math.round(currentT * 100));
+    }
+  };
+
+  document.addEventListener("pointermove", (event) => {
+    if (!tracking) return;
     const rect = mount.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
     const nx = (event.clientX - rect.left) / rect.width;
     const ny = (event.clientY - rect.top) / rect.height;
-    // The gradient axis runs from (72, 1464) to (1178, 359) — bottom-left
-    // to top-right. Project the pointer onto that diagonal so the shine band
-    // sits where the cursor is regardless of aspect ratio.
     const diag = (nx + (1 - ny)) / 2;
     targetT = Math.max(0, Math.min(1, diag));
-    if (!tracking) {
-      // First move after idle: snap the internal value close to the cursor
-      // so the band doesn't sweep across from wherever the SMIL loop left off.
+    if (!pointerActive) {
       currentT = targetT;
-      tracking = true;
+      pointerActive = true;
     }
+    highlightSlider.value = String(Math.round(targetT * 100));
     schedule();
   });
 
-  mount.addEventListener("pointerleave", () => {
-    targetT = null;
-    schedule();
+  document.addEventListener("pointerdown", (event) => {
+    if (!tracking) return;
+    if ((event.target as HTMLElement).closest("#btn-track")) return;
+    lockPosition();
   });
+
+  return {
+    setManualPosition(t: number) {
+      targetT = Math.max(0, Math.min(1, t));
+      currentT = targetT;
+      pointerActive = false;
+      template.setHighlightPosition(targetT);
+    },
+    startTracking() {
+      tracking = true;
+      pointerActive = false;
+      setButtonActive(true);
+    },
+    stopTracking() {
+      tracking = false;
+      setButtonActive(false);
+    }
+  };
 }
 
 function buildFilename(ext: string): string {

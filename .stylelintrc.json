@@ -1,0 +1,35 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "rules": {
+    "scale-unlimited/declaration-strict-value": [
+      ["/color$/", "background", "border-color", "border-top-color", "border-radius"],
+      {
+        "ignoreValues": [
+          "transparent",
+          "inherit",
+          "currentColor",
+          "currentcolor",
+          "none",
+          "0",
+          "50%"
+        ],
+        "disableFix": true,
+        "expandShorthand": true
+      }
+    ],
+    "color-hex-length": null,
+    "color-function-notation": null,
+    "color-function-alias-notation": null,
+    "alpha-value-notation": null,
+    "value-keyword-case": ["lower", {
+      "ignoreFunctions": ["local"],
+      "ignoreProperties": ["font-family", "--mono", "--ui-font"]
+    }],
+    "shorthand-property-no-redundant-values": null,
+    "no-descending-specificity": null,
+    "media-feature-range-notation": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "comment-whitespace-inside": null
+  }
+}
