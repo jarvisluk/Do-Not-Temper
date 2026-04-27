@@ -55,6 +55,7 @@
   --radius-card: 20px;
   --radius-field: 12px;
   --radius-chip: 14px;
+  --radius-track: 3px;
   --radius-btn: 12px;
 
   /* Shadows */
@@ -461,10 +462,9 @@ body {
 /* --- Range slider --- */
 .preview-field input[type="range"] {
   flex: 1 1 auto;
-  -webkit-appearance: none;
   appearance: none;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-track);
   background: var(--field-bg);
   border: 1px solid var(--field-border);
   outline: none;
@@ -477,7 +477,7 @@ body {
 }
 
 .preview-field input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  appearance: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;
