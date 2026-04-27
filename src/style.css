@@ -45,7 +45,13 @@
   --theme-shadow: 0 6px 16px rgba(207, 180, 104, 0.28),
     0 2px 6px rgba(207, 180, 104, 0.22);
 
+  /* Interactive state colors */
+  --ghost-hover: #ebebeb;
+  --field-border-hover: #d4d4d4;
+  --selected-ring: #111111;
+
   /* Shape tokens */
+  --radius-sm: 8px;
   --radius-card: 20px;
   --radius-field: 12px;
   --radius-chip: 14px;
@@ -175,12 +181,12 @@ body {
 
 .field input[type="text"]:hover,
 .field select:hover {
-  border-color: #d4d4d4;
+  border-color: var(--field-border-hover);
 }
 
 .field input[type="text"]:focus,
 .field select:focus {
-  background: #ffffff;
+  background: var(--panel-bg);
   border-color: var(--field-border-focus);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
 }
@@ -215,7 +221,7 @@ body {
 }
 
 .btn:hover {
-  background: #ebebeb;
+  background: var(--ghost-hover);
 }
 
 .btn:active {
@@ -225,30 +231,6 @@ body {
 .btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
-}
-
-.btn-primary {
-  background: var(--theme-solid);
-  color: var(--theme-fg);
-  border-color: transparent;
-  box-shadow: var(--theme-shadow);
-  transition: transform 0.06s ease, box-shadow 0.2s ease,
-    background-color 0.2s ease, color 0.2s ease;
-}
-
-.btn-primary:hover {
-  background: var(--theme-solid-hover);
-  color: var(--theme-fg);
-}
-
-.btn-secondary {
-  background: #111111;
-  color: #ffffff;
-}
-
-.btn-secondary:hover {
-  background: #2a2a2a;
-  color: #ffffff;
 }
 
 /* Highlight button: solid pill used for the default export action.
@@ -279,7 +261,7 @@ body {
 }
 
 .btn-ghost:hover {
-  background: #ebebeb;
+  background: var(--ghost-hover);
 }
 
 .btn-block {
@@ -327,8 +309,8 @@ body {
 }
 
 .swatch:hover {
-  background: #ebebeb;
-  border-color: #d4d4d4;
+  background: var(--ghost-hover);
+  border-color: var(--field-border-hover);
 }
 
 .swatch:active {
@@ -340,7 +322,7 @@ body {
   width: 26px;
   height: 26px;
   flex: 0 0 auto;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: var(--swatch-gradient, var(--sticker-gold));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -357,9 +339,9 @@ body {
 
 /* Selected chip: thick dark ring with a soft inset halo */
 .swatch.is-selected {
-  background: #ffffff;
-  border-color: #111111;
-  box-shadow: 0 0 0 2px #111111, inset 0 0 0 2px #ffffff;
+  background: var(--panel-bg);
+  border-color: var(--selected-ring);
+  box-shadow: 0 0 0 2px var(--selected-ring), inset 0 0 0 2px var(--panel-bg);
 }
 
 .swatch.is-selected .swatch-chip {
