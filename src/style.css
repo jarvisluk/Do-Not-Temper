@@ -40,7 +40,7 @@
   --theme-stop-3: #a67b34;
   --theme-stop-4: #eddb9a;
   --theme-solid: #cfb468;
-  --theme-solid-hover: #a67b34;
+  --theme-solid-hover: #b69e5c;
   --theme-fg: #111111;
   --theme-shadow: 0 6px 16px rgba(207, 180, 104, 0.28),
     0 2px 6px rgba(207, 180, 104, 0.22);
@@ -426,6 +426,104 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* ---------- Preview controls (below the sticker) ---------- */
+.preview-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.preview-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preview-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+/* --- Range slider --- */
+.preview-field input[type="range"] {
+  flex: 1 1 auto;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.preview-field input[type="range"]:hover {
+  border-color: var(--field-border-hover);
+}
+
+.preview-field input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--theme-solid);
+  border: 2px solid var(--panel-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  cursor: grab;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.preview-field input[type="range"]::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+.preview-field input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--theme-solid);
+  border: 2px solid var(--panel-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  cursor: grab;
+}
+
+/* --- Track button (extends .btn .btn-ghost) --- */
+.btn-track {
+  padding: 6px 12px;
+}
+
+.btn-track.is-tracking {
+  background: var(--theme-solid);
+  color: var(--theme-fg);
+  border-color: transparent;
+  box-shadow: var(--theme-shadow);
+  animation: pulse-track 1.5s ease-in-out infinite;
+}
+
+.btn-track.is-tracking:hover {
+  background: var(--theme-solid-hover);
+  color: var(--theme-fg);
+}
+
+@keyframes pulse-track {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
 }
 
 /* ---------- Responsive ---------- */

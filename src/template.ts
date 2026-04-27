@@ -25,7 +25,7 @@ export type StickerData = {
 };
 
 export const DEFAULT_DATA: StickerData = {
-  title: "Fragile",
+  title: "Cryptobiote",
   serial: "332408A403C20477",
   track1: "0B09D564205613289082",
   track2: "52526BA9C806",
