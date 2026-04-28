@@ -369,6 +369,7 @@ body {
   color: var(--text-dim);
 }
 
+.footer-link,
 .github-link {
   display: inline-flex;
   align-items: center;
@@ -383,15 +384,19 @@ body {
   transition: color 150ms ease;
 }
 
+.footer-link:hover,
+.footer-link:focus-visible,
 .github-link:hover,
 .github-link:focus-visible {
   color: var(--text);
 }
 
+.footer-link:focus-visible,
 .github-link:focus-visible {
   outline: none;
 }
 
+.footer-link-icon,
 .github-icon {
   flex: 0 0 auto;
 }
