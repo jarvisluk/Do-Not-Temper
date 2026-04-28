@@ -87,20 +87,13 @@ export class StickerTemplate {
   /**
    * Serializes the current SVG state to a string (for download/export).
    *
-   * If the highlight is currently under pointer control the SMIL `<animate>`
-   * elements have been detached from the DOM. We temporarily re-attach them so
-   * the exported artifact always ships with the full auto-animated highlight.
+   * If the highlight is currently under manual control the SMIL `<animate>`
+   * elements have been detached from the DOM. We leave them detached so the
+   * exported artifact preserves the user-chosen highlight position as a
+   * static snapshot rather than reverting to the default animation.
    */
   serialize(): string {
-    const wasDetached = this.offsetAnimatesDetached;
-    if (wasDetached) {
-      this.attachOffsetAnimates();
-    }
-    const out = new XMLSerializer().serializeToString(this.root);
-    if (wasDetached) {
-      this.detachOffsetAnimates();
-    }
-    return out;
+    return new XMLSerializer().serializeToString(this.root);
   }
 
   /** Applies a full data snapshot to the SVG. */
