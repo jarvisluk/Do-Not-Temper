@@ -1,12 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "do-not-tamper-sticker-tool",
+  "name": "do-not-tamper",
   "compatibility_date": "2026-04-21",
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  },
-  "observability": {
-    "enabled": true
-  }
+  "pages_build_output_dir": "./dist"
 }
