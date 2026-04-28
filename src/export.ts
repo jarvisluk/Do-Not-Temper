@@ -33,7 +33,7 @@ export function downloadSvg(template: StickerTemplate, filename = "do-not-tamper
 export async function downloadPng(
   template: StickerTemplate,
   filename = "do-not-tamper.png",
-  scale = 2
+  scale = 4
 ): Promise<void> {
   const svgSource = buildStandaloneSvg(template);
   const blob = new Blob([svgSource], { type: "image/svg+xml;charset=utf-8" });
