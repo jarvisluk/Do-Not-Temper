@@ -1,5 +1,4 @@
 import { jsPDF } from "jspdf";
-import "svg2pdf.js";
 import type { StickerTemplate } from "./template";
 
 function triggerDownload(blob: Blob, filename: string): void {
@@ -65,36 +64,50 @@ export async function downloadPng(
 }
 
 /**
- * Converts the SVG sticker into a vector PDF using svg2pdf.js, which translates
- * SVG paths, text, and fills into native PDF drawing commands. The result stays
- * crisp at any zoom level and prints at full resolution.
+ * Rasterizes the SVG at high resolution via the browser's rendering engine
+ * (which correctly handles mix-blend-mode, dominant-baseline, etc.) and embeds
+ * the resulting image into a PDF. Scale 4 ≈ 5072×7512 px, well above 300 DPI
+ * for any typical sticker print size.
  */
 export async function downloadPdf(
   template: StickerTemplate,
-  filename = "do-not-tamper.pdf"
+  filename = "do-not-tamper.pdf",
+  scale = 4
 ): Promise<void> {
   const baseWidth = 1268;
   const baseHeight = 1878;
 
-  const pageHeightPt = 6 * 72;
-  const pageWidthPt = (baseWidth / baseHeight) * pageHeightPt;
+  const svgSource = buildStandaloneSvg(template);
+  const svgBlob = new Blob([svgSource], { type: "image/svg+xml;charset=utf-8" });
+  const svgUrl = URL.createObjectURL(svgBlob);
 
-  const pdf = new jsPDF({
-    orientation: "portrait",
-    unit: "pt",
-    format: [pageWidthPt, pageHeightPt],
-    compress: true
-  });
+  try {
+    const img = await loadImage(svgUrl);
+    const canvas = document.createElement("canvas");
+    canvas.width = baseWidth * scale;
+    canvas.height = baseHeight * scale;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not acquire 2D canvas context");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  const svgElement = template.element;
-  await pdf.svg(svgElement, {
-    x: 0,
-    y: 0,
-    width: pageWidthPt,
-    height: pageHeightPt
-  });
+    const imgData = canvas.toDataURL("image/png");
 
-  pdf.save(filename);
+    const pageHeightPt = 6 * 72;
+    const pageWidthPt = (baseWidth / baseHeight) * pageHeightPt;
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: [pageWidthPt, pageHeightPt],
+      compress: true
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, pageWidthPt, pageHeightPt);
+    pdf.save(filename);
+  } finally {
+    URL.revokeObjectURL(svgUrl);
+  }
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
