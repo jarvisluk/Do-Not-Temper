@@ -1,0 +1,62 @@
+/**
+ * Application-level DOM selectors (the IDs declared in `index.html`) and a
+ * tiny strongly-typed `$` helper. Kept separate from `sticker/selectors.ts`
+ * which contains the SVG-internal selectors baked into `sticker.svg`.
+ */
+
+export function $<T extends HTMLElement>(sel: string): T {
+  const el = document.querySelector<T>(sel);
+  if (!el) throw new Error(`Missing required element: ${sel}`);
+  return el;
+}
+
+export const APP_SELECTORS = {
+  stickerMount: "#sticker-mount",
+  inputTitle: "#input-title",
+  inputSerial: "#input-serial",
+  inputTrack1: "#input-track1",
+  inputTrack2: "#input-track2",
+  inputHighlight: "#input-highlight",
+  inputGradient: "#input-gradient",
+  btnTrack: "#btn-track",
+  btnReset: "#btn-reset",
+  btnRandomize: "#btn-randomize",
+  btnDownloadSvg: "#btn-download-svg",
+  btnDownloadPng: "#btn-download-png",
+  btnDownloadPdf: "#btn-download-pdf"
+} as const;
+
+/** Bundle of DOM references the bootstrap wires up once and passes around. */
+export interface AppDom {
+  stickerMount: HTMLElement;
+  titleInput: HTMLInputElement;
+  serialInput: HTMLInputElement;
+  track1Input: HTMLInputElement;
+  track2Input: HTMLInputElement;
+  highlightSlider: HTMLInputElement;
+  gradientList: HTMLDivElement;
+  trackBtn: HTMLButtonElement;
+  resetBtn: HTMLButtonElement;
+  randomizeBtn: HTMLButtonElement;
+  downloadSvgBtn: HTMLButtonElement;
+  downloadPngBtn: HTMLButtonElement;
+  downloadPdfBtn: HTMLButtonElement;
+}
+
+export function queryAppDom(): AppDom {
+  return {
+    stickerMount: $(APP_SELECTORS.stickerMount),
+    titleInput: $<HTMLInputElement>(APP_SELECTORS.inputTitle),
+    serialInput: $<HTMLInputElement>(APP_SELECTORS.inputSerial),
+    track1Input: $<HTMLInputElement>(APP_SELECTORS.inputTrack1),
+    track2Input: $<HTMLInputElement>(APP_SELECTORS.inputTrack2),
+    highlightSlider: $<HTMLInputElement>(APP_SELECTORS.inputHighlight),
+    gradientList: $<HTMLDivElement>(APP_SELECTORS.inputGradient),
+    trackBtn: $<HTMLButtonElement>(APP_SELECTORS.btnTrack),
+    resetBtn: $<HTMLButtonElement>(APP_SELECTORS.btnReset),
+    randomizeBtn: $<HTMLButtonElement>(APP_SELECTORS.btnRandomize),
+    downloadSvgBtn: $<HTMLButtonElement>(APP_SELECTORS.btnDownloadSvg),
+    downloadPngBtn: $<HTMLButtonElement>(APP_SELECTORS.btnDownloadPng),
+    downloadPdfBtn: $<HTMLButtonElement>(APP_SELECTORS.btnDownloadPdf)
+  };
+}

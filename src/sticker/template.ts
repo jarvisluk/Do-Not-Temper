@@ -1,54 +1,11 @@
-import stickerSvgRaw from "./assets/sticker.svg?raw";
-
-export type GradientTheme = {
-  id: string;
-  label: string;
-  stops: [string, string, string, string];
-};
-
-export const GRADIENT_THEMES: GradientTheme[] = [
-  { id: "gold", label: "Gold", stops: ["#cfb468", "#eddb9a", "#a67b34", "#eddb9a"] },
-  { id: "silver", label: "Silver", stops: ["#8a8a8a", "#e8e8e8", "#4a4a4a", "#e8e8e8"] },
-  { id: "holographic", label: "Holographic", stops: ["#ff6ec7", "#7afcff", "#feff9c", "#a06bff"] },
-  { id: "emerald", label: "Emerald", stops: ["#1f6f4a", "#a8e6c1", "#0a3f2a", "#a8e6c1"] },
-  { id: "rose", label: "Rose", stops: ["#b3566b", "#f6c6d0", "#6e2233", "#f6c6d0"] },
-  { id: "ice", label: "Ice", stops: ["#3d7dbf", "#c8e6ff", "#1b3d66", "#c8e6ff"] }
-];
-
-export type StickerData = {
-  title: string;
-  serial: string;
-  track1: string;
-  track2: string;
-  accentColor: string;
-  gradientId: string;
-};
-
-export const DEFAULT_DATA: StickerData = {
-  title: "Cryptobiote",
-  serial: "332408A403C20477",
-  track1: "0B09D564205613289082",
-  track2: "52526BA9C806",
-  accentColor: "#FF0000",
-  gradientId: "gold"
-};
-
-/**
- * Parses the raw SVG source once and returns a cloneable root element.
- * Using DOMParser with "image/svg+xml" preserves namespaces, which is
- * required for the embedded animations and filter references to keep working.
- */
-export function parseStickerSvg(): SVGSVGElement {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(stickerSvgRaw, "image/svg+xml");
-  const err = doc.querySelector("parsererror");
-  if (err) {
-    throw new Error("Failed to parse sticker SVG: " + err.textContent);
-  }
-  const root = doc.documentElement as unknown as SVGSVGElement;
-  root.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  return root;
-}
+import { lightenColor } from "@/utils/color";
+import {
+  GRADIENT_THEMES,
+  type GradientId,
+  type StickerData
+} from "./data";
+import { SVG_SELECTORS } from "./selectors";
+import { parseStickerSvg } from "./svg";
 
 /**
  * Relative `offset` layout of the 4 highlight stops, measured against a moving
@@ -57,10 +14,10 @@ export function parseStickerSvg(): SVGSVGElement {
  */
 const HIGHLIGHT_STOP_LAYOUT: readonly number[] = [0, 0.1, 0.3, 0.5];
 
-type OffsetAnimateEntry = {
+interface OffsetAnimateEntry {
   stop: Element;
   animate: Element;
-};
+}
 
 export class StickerTemplate {
   private root: SVGSVGElement;
@@ -107,7 +64,7 @@ export class StickerTemplate {
   }
 
   setTitle(value: string): void {
-    const node = this.root.querySelector("#edit-title");
+    const node = this.root.querySelector(SVG_SELECTORS.title);
     if (node) {
       node.textContent = value;
     }
@@ -115,7 +72,7 @@ export class StickerTemplate {
   }
 
   setSerial(value: string): void {
-    const node = this.root.querySelector<SVGTextElement>("#edit-serial");
+    const node = this.root.querySelector<SVGTextElement>(SVG_SELECTORS.serial);
     if (node) {
       node.textContent = value;
       applyHexScale(node, value.length);
@@ -123,7 +80,7 @@ export class StickerTemplate {
   }
 
   setTrack1(value: string): void {
-    const node = this.root.querySelector<SVGTSpanElement>("#edit-track-1");
+    const node = this.root.querySelector<SVGTSpanElement>(SVG_SELECTORS.track1);
     if (node) {
       node.textContent = value;
       applyHexScale(node, value.length);
@@ -131,7 +88,7 @@ export class StickerTemplate {
   }
 
   setTrack2(value: string): void {
-    const node = this.root.querySelector<SVGTSpanElement>("#edit-track-2");
+    const node = this.root.querySelector<SVGTSpanElement>(SVG_SELECTORS.track2);
     if (node) {
       node.textContent = value;
       applyHexScale(node, value.length);
@@ -139,7 +96,7 @@ export class StickerTemplate {
   }
 
   setAccentColor(color: string): void {
-    const node = this.root.querySelector<SVGPathElement>("#edit-accent");
+    const node = this.root.querySelector<SVGPathElement>(SVG_SELECTORS.accent);
     if (node) {
       node.setAttribute("fill", color);
     }
@@ -158,7 +115,7 @@ export class StickerTemplate {
    */
   setHighlightPosition(t: number | null): void {
     this.captureOffsetAnimates();
-    const gradient = this.root.querySelector("#SVGID_1_");
+    const gradient = this.root.querySelector(SVG_SELECTORS.gradient);
     if (!gradient) return;
 
     if (t === null) {
@@ -187,7 +144,7 @@ export class StickerTemplate {
 
   private captureOffsetAnimates(): void {
     if (this.offsetAnimates.length > 0) return;
-    const gradient = this.root.querySelector("#SVGID_1_");
+    const gradient = this.root.querySelector(SVG_SELECTORS.gradient);
     if (!gradient) return;
     const stops = gradient.querySelectorAll("stop");
     stops.forEach((stop) => {
@@ -216,9 +173,9 @@ export class StickerTemplate {
     this.offsetAnimatesDetached = false;
   }
 
-  setGradient(themeId: string): void {
+  setGradient(themeId: GradientId): void {
     const theme = GRADIENT_THEMES.find((t) => t.id === themeId) ?? GRADIENT_THEMES[0];
-    const gradient = this.root.querySelector("#SVGID_1_");
+    const gradient = this.root.querySelector(SVG_SELECTORS.gradient);
     if (!gradient) return;
     const stops = gradient.querySelectorAll("stop");
     theme.stops.forEach((color, index) => {
@@ -239,7 +196,7 @@ export class StickerTemplate {
    * the rounded-rect label area. Defaults to 120px at ~8 chars or fewer.
    */
   private autoScaleTitle(): void {
-    const node = this.root.querySelector<SVGTextElement>("#edit-title");
+    const node = this.root.querySelector<SVGTextElement>(SVG_SELECTORS.title);
     if (!node) return;
     const text = node.textContent ?? "";
     const len = text.length;
@@ -262,16 +219,4 @@ function applyHexScale(node: SVGElement, len: number): void {
   if (len > 24) size = 48;
   if (len > 30) size = 40;
   node.setAttribute("font-size", `${size}px`);
-}
-
-/** Lightens a hex color by a ratio (0..1). */
-function lightenColor(hex: string, ratio: number): string {
-  const cleaned = hex.replace("#", "");
-  if (cleaned.length !== 6) return hex;
-  const r = parseInt(cleaned.slice(0, 2), 16);
-  const g = parseInt(cleaned.slice(2, 4), 16);
-  const b = parseInt(cleaned.slice(4, 6), 16);
-  const mix = (c: number) => Math.min(255, Math.round(c + (255 - c) * ratio));
-  const toHex = (c: number) => c.toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
 }
