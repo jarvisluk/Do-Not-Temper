@@ -32,7 +32,7 @@ colors:
   sticker-gold-dark: "#a67b34"
 
   theme-solid: "#cfb468"
-  theme-solid-hover: "#a67b34"
+  theme-solid-hover: "#b69e5c"
   theme-fg: "#111111"
 
   ghost-hover: "#ebebeb"
@@ -103,6 +103,7 @@ rounded:
   DEFAULT: 12px
   md: 14px
   lg: 20px
+  track: 3px
 
 spacing:
   unit: 8px
@@ -188,7 +189,7 @@ components:
     backgroundColor: "{colors.selected-ring}"
 
   preview-stage:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: transparent
     rounded: "{rounded.lg}"
 
   sticker-accent:
@@ -215,14 +216,6 @@ components:
     textColor: "{colors.on-surface-dim}"
     typography: "{typography.footer}"
 
-  highlight-badge:
-    backgroundColor: "{colors.highlight}"
-    textColor: "{colors.on-surface}"
-
-  accent-badge:
-    backgroundColor: "{colors.accent-soft}"
-    textColor: "#cc0000"
-
   field-hint:
     textColor: "{colors.on-surface-dim}"
     typography: "{typography.field-hint}"
@@ -239,10 +232,34 @@ components:
   field-border-focus:
     backgroundColor: "{colors.field-border-focus}"
 
-  theme-button:
+  preview-controls:
+    backgroundColor: "{colors.surface-container}"
+    rounded: "{rounded.lg}"
+    padding: 16px 18px
+
+  preview-field-label:
+    textColor: "{colors.on-surface-dim}"
+    typography: "{typography.field-label}"
+
+  range-track:
+    backgroundColor: "{colors.field}"
+    rounded: "{rounded.track}"
+    height: 6px
+
+  range-thumb:
+    backgroundColor: "{colors.theme-solid}"
+    size: 18px
+
+  btn-track:
+    backgroundColor: "{colors.field}"
+    textColor: "{colors.on-surface}"
+    typography: "{typography.button}"
+    rounded: "{rounded.DEFAULT}"
+    padding: 6px 12px
+
+  btn-track-tracking:
     backgroundColor: "{colors.theme-solid}"
     textColor: "{colors.theme-fg}"
-    rounded: "{rounded.DEFAULT}"
 ---
 
 ## Brand & Style
@@ -284,11 +301,13 @@ theme presets are available, each defining four ordered stops:
 | Ice          | `#3d7dbf` | `#c8e6ff` | `#1b3d66` | `#c8e6ff` |
 
 Stop 1 is the theme's "brand" color and is promoted into the surrounding
-chrome as the primary button fill and tinted shadow source. Stop 3 is
-the darker companion used for hover states. A luminance check ensures
-that very pale stops (like Silver's `#e8e8e8`) are darkened before
-becoming the button color, so the button always reads as a solid action
-target.
+chrome as the primary button fill and tinted shadow source. The hover
+state is derived programmatically by darkening that brand color by 12 %
+(it is *not* taken from stop 3), so every theme yields a consistent
+hover delta regardless of how its stops are arranged. A luminance check
+ensures that very pale stops (relative luminance above 0.7, such as
+Silver's `#e8e8e8`) are darkened by 30 % before becoming the button
+color, so the button always reads as a solid action target.
 
 ### Chrome Palette
 
@@ -321,8 +340,10 @@ antialiased`) for crisp, thin letterforms on macOS.
 ## Layout & Spacing
 
 The layout is a simple **two-column flexbox** that centers the sticker
-preview alongside the control panel. On screens narrower than 860 px the
-layout collapses into a single centered column.
+preview alongside the control panel. On screens narrower than 860 px
+the layout collapses into a single centered column with `gap` and
+outer `padding` both reduced from 32 px to 20 px; the preview and
+control card stretch to the available width up to a 520 px cap.
 
 - **Rhythm:** All spacing derives from an 8 px base unit. Common
   intervals are 6, 8, 10, 14, 18, 20, 24, and 32 px.
@@ -332,7 +353,10 @@ layout collapses into a single centered column.
 - **Interior spacing:** Fields stack with 14 px bottom margin. Section
   groups are separated by 18 px of margin plus a 1 px divider.
   The panel body has 24 px padding.
-- **Layout gap:** 32 px separates the preview from the control panel.
+- **Layout gap:** 32 px separates the preview from the control panel
+  (20 px in the collapsed single-column layout).
+- **Preview column:** Inside the preview column the sticker stage and
+  its preview-controls card are stacked with a 14 px gap.
 
 ## Elevation & Depth
 
@@ -359,16 +383,21 @@ The shape language is **uniformly rounded** to feel approachable and
 modern, contrasting with the rigid orthographic geometry of the sticker
 itself.
 
-| Element       | Radius   | Token          |
-|:--------------|:---------|:---------------|
-| Panel card    | 20 px    | `rounded.lg`   |
-| Swatch chips  | 14 px    | `rounded.md`   |
+| Element       | Radius   | Token             |
+|:--------------|:---------|:------------------|
+| Panel card    | 20 px    | `rounded.lg`      |
+| Preview stage | 20 px    | `rounded.lg`      |
+| Swatch chips  | 14 px    | `rounded.md`      |
 | Buttons       | 12 px    | `rounded.DEFAULT` |
 | Input fields  | 12 px    | `rounded.DEFAULT` |
-| Swatch dot    | 8 px     | `rounded.sm`   |
+| Swatch dot    | 8 px     | `rounded.sm`      |
+| Range track   | 3 px     | `rounded.track`   |
+| Range thumb   | 50 %     | (circular)        |
 
-All interactive elements use the same 12 px radius to create a
-family of consistently pill-shaped controls.
+All interactive *control* elements use the same 12 px radius to create
+a family of consistently pill-shaped controls; the range slider's
+thinner 3 px track and circular thumb are the only deliberate
+exceptions.
 
 ## Components
 
@@ -392,7 +421,8 @@ Three button variants:
 
 - **Highlight** — Filled with the active theme color (e.g., gold),
   dark text, and a theme-tinted shadow. Used for the primary export
-  action ("Save PNG"). Hover darkens to the theme's stop-3 color.
+  action ("Save PNG"). Hover darkens the brand color by 12 % (see
+  the Sticker Palette note above).
 - **Ghost** — `#f5f5f5` fill with a `#e5e5e5` border. Used for
   secondary actions ("Save SVG", "Save PDF", "Reset"). Hover fills
   darken to `#ebebeb`.
@@ -411,11 +441,71 @@ non-distracting selection state.
 
 ### Preview Stage
 
-The sticker preview is housed in a borderless container that preserves
-the SVG's native 1268 × 1878 aspect ratio. It carries the heavier
-`shadow-preview` to anchor it visually as the primary artifact. The
-holographic gradient stripe animates via SMIL by default and tracks
-the pointer on hover for an interactive parallax effect.
+The sticker preview is housed in a borderless, fully transparent
+container that preserves the SVG's native 1268 × 1878 aspect ratio. No
+fill is painted behind the sticker—the stage relies entirely on
+`shadow-preview` to anchor it visually as the primary artifact, as if
+the label were lying flat on the page. The holographic gradient stripe
+animates via SMIL by default and can be steered manually (see
+**Preview Controls** below) or set to follow the pointer for an
+interactive parallax effect.
+
+### Preview Controls
+
+A second white card sits directly beneath the sticker stage and hosts
+the controls that affect the preview itself (not the sticker content).
+It mirrors the panel card's visual treatment—same `surface-container`
+background, `rounded.lg` corners, `panel-border` hairline, and
+`shadow-card` elevation—but uses tighter `16 × 18 px` padding and a
+12 px vertical gap between rows. Each row is a horizontal flex with
+the field label pinned to the left and the interactive control filling
+the remaining space.
+
+### Range Slider
+
+Used for the "Highlight position" control. The slider has a custom
+appearance across browsers:
+
+- **Track:** 6 px tall, `field` background with a 1 px `field-border`,
+  rounded with `rounded.track` (3 px). Hover darkens the border to
+  `field-border-hover`.
+- **Thumb:** An 18 px circle filled with the active `theme-solid`
+  color, ringed by a 2 px `surface-container` border so the thumb
+  reads as a token resting on the track. A subtle 1 px / 4 px
+  black-at-18 % drop shadow gives it weight.
+- **Interaction:** Cursor is `grab` at rest and `grabbing` while
+  pressed. On `:active` the thumb scales to 1.15 to confirm the drag.
+
+Because the thumb inherits `theme-solid`, the slider visually belongs
+to the same color family as the primary "Save PNG" button and the
+sticker's holo stripe.
+
+### Track Button ("Follow Cursor")
+
+A compact ghost button (`6 × 12 px` padding) that toggles pointer
+tracking for the highlight band. It has three visual states:
+
+1. **Default** — Standard ghost styling, label reads "Follow cursor".
+2. **Tracking** — While active the button recolors to the theme
+   (`theme-solid` fill, `theme-fg` text, `theme-shadow` shadow) and
+   pulses opacity between 100 % and 80 % on a 1.5 s `ease-in-out`
+   loop. Label switches to "Click to lock".
+3. **Locked** — After the user clicks anywhere to commit a position,
+   the button returns to its default ghost state and label.
+
+The pulse animation is the only non-static motion in the chrome and is
+intentionally reserved for this single "live" state.
+
+### Footer Links
+
+Two underlined inline links sit at the bottom of the control panel,
+above the legal/attribution paragraph: one points to a related project
+("Damage Sensor Tape"), the other to the GitHub source. Both use the
+`footer` typography token in `on-surface-dim`, a 16 px leading
+SVG glyph (external-link icon and GitHub mark respectively), a 6 px
+gap between icon and label, and `text-underline-offset: 3px`. Hover
+and `:focus-visible` raise the color to `on-surface`; the default
+focus outline is suppressed in favor of the underline + color shift.
 
 ## Do's and Don'ts
 
