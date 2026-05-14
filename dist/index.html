@@ -7,8 +7,8 @@
     <link rel="apple-touch-icon" href="./favicon.svg" />
     <meta name="theme-color" content="#cfb468" />
     <title>Do Not Tamper — Sticker Customizer</title>
-    <script type="module" crossorigin src="./assets/index-aczDtG7-.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Dz6BIJcM.css">
+    <script type="module" crossorigin src="./assets/index-CIuHHTbP.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-OUR3lndc.css">
   </head>
   <body>
     <main class="app">
@@ -23,13 +23,12 @@
             <input id="input-highlight" type="range" min="0" max="100" value="50" />
           </label>
 
-          <label class="preview-field preview-toggle-field">
-            <span class="preview-field-label">Mouse tracking</span>
-            <span class="toggle">
-              <input id="input-tracking" type="checkbox" checked />
-              <span class="toggle-track" aria-hidden="true"></span>
-            </span>
-          </label>
+          <div class="preview-field">
+            <span class="preview-field-label">Highlight angle</span>
+            <button id="btn-track" class="btn btn-ghost btn-track" type="button">
+              Follow cursor
+            </button>
+          </div>
         </div>
       </section>
 
@@ -78,6 +77,18 @@
         </section>
 
         <footer class="controls-footer">
+          <a
+            class="footer-link"
+            href="https://damage-sensor-tape.pages.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg class="footer-link-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            <span>Related project — Damage Sensor Tape</span>
+          </a>
           <a
             class="github-link"
             href="https://github.com/jarvisluk/Do-Not-Temper"
