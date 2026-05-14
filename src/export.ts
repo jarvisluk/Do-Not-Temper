@@ -16,6 +16,9 @@ function triggerDownload(blob: Blob, filename: string): void {
 
 type ExportTarget = "svg" | "pdf";
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+const ACCENT_SELECTOR = ".st8";
+
 /**
  * Applies export-specific fixups to the live SVG DOM and returns a teardown
  * function that restores the original state.
@@ -23,8 +26,10 @@ type ExportTarget = "svg" | "pdf";
  *  1. Remove the black stroke on the background rect (.st0).
  *  2. Handle mix-blend-mode (.st8):
  *     - SVG: replace with an SVG filter reference for standalone renderers.
- *     - PDF: svg2pdf.js does not support mix-blend-mode at all, so we
- *       approximate it with fill-opacity to let the underlying pattern show.
+ *     - PDF: hide the multiply layer here entirely. The PDF export then draws
+ *       it in a second pass wrapped in an ExtGState that sets `/BM /Multiply`,
+ *       so the PDF renderer does the real per-pixel multiply against whatever
+ *       has been drawn underneath. See `downloadPdf`.
  *  3. PDF only: copy `dominant-baseline` → `alignment-baseline` because
  *     svg2pdf.js only reads the latter.
  */
@@ -39,16 +44,17 @@ function prepareForExport(svg: SVGSVGElement, target: ExportTarget = "svg"): () 
   }
 
   if (target === "pdf") {
-    // svg2pdf.js doesn't support mix-blend-mode; approximate with opacity
-    const blendEls = svg.querySelectorAll<SVGElement>(".st8");
+    // Hide every multiply-blend element so svg2pdf.js doesn't draw it as a
+    // flat opaque fill in the first pass. We'll redraw it in pass 2 with a
+    // real PDF /BM /Multiply ExtGState active.
+    const blendEls = svg.querySelectorAll<SVGElement>(ACCENT_SELECTOR);
     for (const el of blendEls) {
-      const prevOpacity = el.getAttribute("opacity");
-      el.setAttribute("opacity", "0.85");
-      el.style.mixBlendMode = "";
+      const prevDisplay = el.style.display;
+      const prevDisplayPriority = el.style.getPropertyPriority("display");
+      el.style.setProperty("display", "none", "important");
       restorers.push(() => {
-        if (prevOpacity !== null) el.setAttribute("opacity", prevOpacity);
-        else el.removeAttribute("opacity");
-        el.style.mixBlendMode = "multiply";
+        if (prevDisplay) el.style.setProperty("display", prevDisplay, prevDisplayPriority);
+        else el.style.removeProperty("display");
       });
     }
 
@@ -117,6 +123,97 @@ function prepareForExport(svg: SVGSVGElement, target: ExportTarget = "svg"): () 
   };
 }
 
+/**
+ * Registers a custom PDF ExtGState resource that sets blend mode to Multiply,
+ * and returns the resource name to use as `/<name> gs` in a content stream.
+ *
+ * Why this is needed: jsPDF's public `GState` only exposes `opacity` and
+ * `stroke-opacity` (its `putGState()` switch hardcodes /ca and /CA). PDF's
+ * native blend modes (/BM /Multiply, /Screen, etc., per PDF 1.4) are simply
+ * not surfaced. We use jsPDF's documented `internal` API to inject our own
+ * ExtGState object alongside the regular gStates dictionary.
+ *
+ * To make sure jsPDF actually emits an `/ExtGState` entry in the page
+ * resources (which only happens when at least one GState exists), we also
+ * register a no-op opacity:1 GState through the normal API.
+ */
+function registerBlendGState(pdf: jsPDF, name: string, mode: "Multiply" | "Normal"): void {
+  const internal = (pdf as unknown as {
+    internal: {
+      newObject: () => number;
+      write: (...parts: string[]) => void;
+      out: (s: string) => void;
+      events: { subscribe: (event: string, cb: () => void) => void };
+    };
+  }).internal;
+
+  let oid: number | null = null;
+
+  // Phase 1 — when jsPDF asks plugins to add extra resource objects (this
+  // fires *before* the resource dictionary is written), emit our ExtGState
+  // object and remember its PDF object id.
+  internal.events.subscribe("putResources", () => {
+    oid = internal.newObject();
+    internal.write(`<< /Type /ExtGState /BM /${mode} /ca 1 /CA 1 >>`);
+    internal.write("endobj");
+  });
+
+  // Phase 2 — when jsPDF emits the /ExtGState dictionary in the page's
+  // Resources, append our entry: `/<name> <oid> 0 R`.
+  internal.events.subscribe("putGStateDict", () => {
+    if (oid !== null) internal.out(`/${name} ${oid} 0 R`);
+  });
+
+  // Make sure putGStatesDict() is actually called: it's gated behind
+  // gStates having at least one entry. A harmless opacity:1 GState is enough.
+  type GStateLike = Parameters<typeof pdf.addGState>[1];
+  const GStateCtor = (pdf as unknown as { GState: new (params: object) => GStateLike }).GState;
+  pdf.addGState(`__force_extgstate_${name}`, new GStateCtor({ opacity: 1 }));
+}
+
+/**
+ * Returns a fresh standalone <svg> root containing only a clone of the
+ * `#edit-accent` path (plus the original viewBox/CSS rules it depends on).
+ * Used for the second-pass render under multiply blend mode.
+ */
+function buildAccentOnlySvg(original: SVGSVGElement): SVGSVGElement | null {
+  const accent = original.querySelector<SVGElement>("#edit-accent");
+  if (!accent) return null;
+
+  const svg = document.createElementNS(SVG_NS, "svg") as SVGSVGElement;
+  const viewBox = original.getAttribute("viewBox") ?? "0 0 1268 1878";
+  svg.setAttribute("xmlns", SVG_NS);
+  svg.setAttribute("viewBox", viewBox);
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+  const accentClone = accent.cloneNode(true) as SVGElement;
+  // CRITICAL: clear the `display:none` we set in prepareForExport. cloneNode
+  // brings the inline style with it, which would suppress drawing in svg2pdf.
+  accentClone.style.removeProperty("display");
+  accentClone.style.removeProperty("visibility");
+  // Drop the .st8 mix-blend-mode marker — blending is handled by the PDF
+  // ExtGState wrapper, not here. Keep .st2 so the red fill still applies.
+  const cls = accentClone.getAttribute("class");
+  if (cls) {
+    const stripped = cls.split(/\s+/).filter((c) => c !== "st8").join(" ");
+    if (stripped) accentClone.setAttribute("class", stripped);
+    else accentClone.removeAttribute("class");
+  }
+  // Belt and suspenders: set inline fill so the path still paints if the
+  // class-based <style> rules don't carry over to svg2pdf's pass.
+  accentClone.style.setProperty("fill", "#FF0000", "important");
+  accentClone.setAttribute("fill", "#FF0000");
+
+  // Re-attach the original SVG's <style> block so .st2 (fill:#FF0000) resolves.
+  const originalStyle = original.querySelector("style");
+  if (originalStyle) {
+    svg.appendChild(originalStyle.cloneNode(true));
+  }
+
+  svg.appendChild(accentClone);
+  return svg;
+}
+
 function buildStandaloneSvg(template: StickerTemplate): string {
   const svg = template.element;
   const restore = prepareForExport(svg);
@@ -171,8 +268,20 @@ export async function downloadPng(
 
 /**
  * Converts the SVG sticker into a vector PDF using svg2pdf.js, which translates
- * SVG paths, text, and fills into native PDF drawing commands. The result stays
- * crisp at any zoom level and prints at full resolution.
+ * SVG paths, text, and fills into native PDF drawing commands.
+ *
+ * The mix-blend-mode multiply on the red "E" needs special handling because
+ * neither svg2pdf.js nor jsPDF surfaces PDF blend modes. We work around this
+ * with a two-pass render:
+ *
+ *   Pass 1: hide the multiply-blend element(s); svg2pdf draws the gold
+ *           background, white E hole, text, etc. into the page.
+ *   Pass 2: write a raw `q /GsMul gs ... Q` block into the content stream
+ *           and have svg2pdf draw a tiny SVG that contains only the accent
+ *           path. Because the surrounding ExtGState has /BM /Multiply, the
+ *           PDF renderer multiplies the accent's pixels with whatever was
+ *           painted in Pass 1 — exactly like CSS mix-blend-mode would do
+ *           on screen.
  */
 export async function downloadPdf(
   template: StickerTemplate,
@@ -196,16 +305,47 @@ export async function downloadPdf(
   pdf.addFileToVFS("OCR.ttf", OCR_TTF_BASE64);
   pdf.addFont("OCR.ttf", "OCR", "normal");
 
+  // Register the multiply ExtGState before any content is written.
+  const MUL_GS_NAME = "GsMul";
+  registerBlendGState(pdf, MUL_GS_NAME, "Multiply");
+
   const svgElement = template.element;
   const restore = prepareForExport(svgElement, "pdf");
+  const accentOnlySvg = buildAccentOnlySvg(svgElement);
 
   try {
+    // Pass 1: main render with the multiply-blend element hidden.
     await pdf.svg(svgElement, {
       x: 0,
       y: 0,
       width: pageWidthPt,
       height: pageHeightPt
     });
+
+    if (accentOnlySvg) {
+      const internalApi = (pdf as unknown as { internal: { out: (s: string) => void } }).internal;
+      // Pass 2: open a graphics-state scope, switch on multiply blend, draw
+      // just the accent, then restore. The accent SVG must temporarily live
+      // in the document so svg2pdf can run getBoundingClientRect on it.
+      accentOnlySvg.style.position = "absolute";
+      accentOnlySvg.style.left = "-99999px";
+      accentOnlySvg.setAttribute("width", String(baseWidth));
+      accentOnlySvg.setAttribute("height", String(baseHeight));
+      document.body.appendChild(accentOnlySvg);
+      try {
+        internalApi.out(`q /${MUL_GS_NAME} gs`);
+        await pdf.svg(accentOnlySvg, {
+          x: 0,
+          y: 0,
+          width: pageWidthPt,
+          height: pageHeightPt
+        });
+        internalApi.out("Q");
+      } finally {
+        accentOnlySvg.remove();
+      }
+    }
+
     pdf.save(filename);
   } finally {
     restore();
