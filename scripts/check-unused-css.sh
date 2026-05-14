@@ -2,24 +2,24 @@
 set -euo pipefail
 
 STYLE_FILE="src/style.css"
-SRC_FILES=(src/index.html src/*.ts)
 
 if [[ ! -f "$STYLE_FILE" ]]; then
   echo "ERROR: $STYLE_FILE not found"
   exit 1
 fi
 
+# Recursively scan all source files. The project now uses src/app, src/sticker,
+# src/export, src/utils subdirectories so the prior `src/*.ts` glob is not
+# enough. Using `grep -r` here keeps us compatible with macOS's bash 3.2 (no
+# `mapfile`, no `**` globstar).
 unused=0
 
 while IFS= read -r cls; do
   [[ -z "$cls" ]] && continue
   found=false
-  for f in "${SRC_FILES[@]}"; do
-    if grep -q "$cls" "$f" 2>/dev/null; then
-      found=true
-      break
-    fi
-  done
+  if grep -rq --include="*.ts" --include="*.html" -- "$cls" src 2>/dev/null; then
+    found=true
+  fi
   if [[ "$found" == "false" ]]; then
     echo "WARNING: .$cls defined in $STYLE_FILE but not referenced in source files"
     unused=$((unused + 1))
