@@ -1,1 +1,24 @@
+#
+# Block commits made directly on protected branches.
+#
+# Rationale: every change should go through a feature branch + PR so that
+# CI runs and review happens before code lands on `main`. See AGENTS.md.
+#
+# Escape hatch (use sparingly, with intent):
+#   git commit --no-verify ...
+#
+protected_branches="main"
+current_branch="$(git symbolic-ref --short HEAD 2>/dev/null || echo '')"
+
+for protected in $protected_branches; do
+  if [ "$current_branch" = "$protected" ]; then
+    printf '\033[31m✘ Refusing to commit directly on "%s".\033[0m\n' "$current_branch" >&2
+    printf '\n  Move your work to a feature branch first:\n\n' >&2
+    printf '    git checkout -b <type>/<short-slug>   # e.g. fix/pdf-export\n\n' >&2
+    printf '  See AGENTS.md > "Golden rule" for the full flow.\n' >&2
+    printf '  (To bypass intentionally: git commit --no-verify)\n' >&2
+    exit 1
+  fi
+done
+
 npx lint-staged
