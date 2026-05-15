@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "jspdf": "^4.2.1",
+    "jspdf-blend-modes": "^0.2.1",
     "svg2pdf.js": "^2.7.0"
   }
 }
