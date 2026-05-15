@@ -10,7 +10,7 @@ import { prepareForExport } from "./prepare";
  */
 export function buildStandaloneSvg(template: StickerTemplate): string {
   const svg = template.element;
-  const restore = prepareForExport(svg, "svg");
+  const restore = prepareForExport(svg);
   try {
     const serialized = new XMLSerializer().serializeToString(svg);
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n${serialized}`;

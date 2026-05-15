@@ -1,29 +1,22 @@
 import { SVG_EXPORT_IDS, SVG_SELECTORS } from "@/sticker/selectors";
 
-export type ExportTarget = "svg" | "pdf";
-
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * Applies export-specific fixups to the live SVG DOM and returns a teardown
- * function that restores the original state. Always call `restore()` in a
- * `finally` block — the SVG element is the same one mounted in the preview.
+ * Applies SVG-export fixups to the live SVG DOM and returns a teardown function
+ * that restores the original state. Always call `restore()` in a `finally`
+ * block — the SVG element is the same one mounted in the preview.
  *
  *  1. Remove the black stroke on the background rect.
- *  2. Handle CSS `mix-blend-mode: multiply` on the accent layer:
- *     - SVG target: replace the inline CSS blend with an SVG `<filter>`
- *       reference so standalone renderers (Inkscape, browser <img>, etc.)
- *       reproduce the multiply effect.
- *     - PDF target: hide the multiply layer entirely. The PDF exporter then
- *       redraws it in a second pass wrapped in an ExtGState that sets
- *       `/BM /Multiply`, so the PDF viewer does the real per-pixel multiply.
- *  3. PDF target only: mirror `dominant-baseline` → `alignment-baseline`,
- *     because svg2pdf.js reads the latter but the sticker SVG sets the former.
+ *  2. Replace inline CSS `mix-blend-mode: multiply` on the accent layer with
+ *     an SVG `<filter>` reference, so standalone renderers (Inkscape, browser
+ *     `<img>`, etc.) reproduce the multiply effect from the exported `.svg`
+ *     file.
+ *
+ * PDF export uses its own pipeline (see `pdf.ts` + `jspdf-blend-modes`) which
+ * handles blend modes natively via PDF 1.4 ExtGState — no DOM rewriting needed.
  */
-export function prepareForExport(
-  svg: SVGSVGElement,
-  target: ExportTarget = "svg"
-): () => void {
+export function prepareForExport(svg: SVGSVGElement): () => void {
   const restorers: (() => void)[] = [];
 
   const bgRect = svg.querySelector<SVGElement>(SVG_SELECTORS.bgRect);
@@ -35,40 +28,6 @@ export function prepareForExport(
     });
   }
 
-  if (target === "pdf") {
-    // Hide every multiply-blend element so svg2pdf.js doesn't draw it as a
-    // flat opaque fill in the first pass. We'll redraw it in pass 2 with a
-    // real PDF /BM /Multiply ExtGState active.
-    const blendEls = svg.querySelectorAll<SVGElement>(SVG_SELECTORS.blend);
-    for (const el of blendEls) {
-      const prevDisplay = el.style.display;
-      const prevDisplayPriority = el.style.getPropertyPriority("display");
-      el.style.setProperty("display", "none", "important");
-      restorers.push(() => {
-        if (prevDisplay) el.style.setProperty("display", prevDisplay, prevDisplayPriority);
-        else el.style.removeProperty("display");
-      });
-    }
-
-    // svg2pdf.js reads alignment-baseline but not dominant-baseline.
-    const textEls = svg.querySelectorAll<SVGElement>("[dominant-baseline]");
-    for (const el of textEls) {
-      const db = el.getAttribute("dominant-baseline")!;
-      const prevAb = el.getAttribute("alignment-baseline");
-      el.setAttribute("alignment-baseline", db);
-      restorers.push(() => {
-        if (prevAb !== null) el.setAttribute("alignment-baseline", prevAb);
-        else el.removeAttribute("alignment-baseline");
-      });
-    }
-
-    return () => {
-      for (const fn of restorers) fn();
-    };
-  }
-
-  // SVG target: replace CSS mix-blend-mode with an SVG filter so the exported
-  // file renders correctly outside the browser.
   const filterId = SVG_EXPORT_IDS.multiplyFilter;
   let filterEl: SVGFilterElement | null = svg.querySelector(`#${filterId}`);
   let filterWasCreated = false;
