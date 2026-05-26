@@ -189,7 +189,7 @@ async function runExport(
   task: () => Promise<void>
 ): Promise<void> {
   const originalLabel = btn.textContent;
-  btn.disabled = true;
+  const restoreControls = disableControlsDuringExport(dom);
   btn.setAttribute("aria-busy", "true");
   btn.textContent = "Rendering…";
   announce(dom, `Rendering ${label}.`);
@@ -201,7 +201,7 @@ async function runExport(
     announce(dom, `${label} export failed.`);
     alert(`Failed to export ${label}. Please try again.`);
   } finally {
-    btn.disabled = false;
+    restoreControls();
     btn.removeAttribute("aria-busy");
     btn.textContent = originalLabel;
   }
@@ -217,4 +217,34 @@ async function copyText(text: string): Promise<void> {
   }
 
   await navigator.clipboard.writeText(text);
+}
+
+function disableControlsDuringExport(dom: AppDom): () => void {
+  const controls = [
+    dom.titleInput,
+    dom.serialInput,
+    dom.track1Input,
+    dom.track2Input,
+    dom.highlightSlider,
+    dom.accentColorInput,
+    dom.trackBtn,
+    dom.resetBtn,
+    dom.randomizeBtn,
+    dom.shareLinkBtn,
+    dom.downloadSvgBtn,
+    dom.downloadPngBtn,
+    dom.downloadPdfBtn
+  ] as const;
+  const previousDisabledState = new Map<HTMLElement, boolean>();
+
+  for (const control of controls) {
+    previousDisabledState.set(control, control.hasAttribute("disabled"));
+    control.setAttribute("disabled", "");
+  }
+
+  return () => {
+    for (const [control, wasDisabled] of previousDisabledState) {
+      if (!wasDisabled) control.removeAttribute("disabled");
+    }
+  };
 }
