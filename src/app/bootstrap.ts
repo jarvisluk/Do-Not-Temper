@@ -19,21 +19,26 @@ import {
   loadStoredAppState,
   saveStoredAppState
 } from "./storage";
+import {
+  buildShareUrl,
+  loadSharedAppState
+} from "./share";
 import { applyThemeToChrome } from "./themeChrome";
 
 /**
  * Wires the page together once `index.html` is parsed:
  *  - mounts the sticker SVG into `#sticker-mount`
- *  - hydrates form controls from the last saved local state, falling back to defaults
+ *  - hydrates controls from a shared URL or the last saved local state
  *  - binds all input events, swatch clicks, and toolbar buttons
  *
  * Bootstrap is intentionally synchronous; no async work runs at import time.
  */
 export function bootstrap(): void {
   const dom = queryAppDom();
-  const storedState = loadStoredAppState();
-  const state: StickerData = { ...storedState.sticker };
-  let highlightPosition = storedState.highlightPosition;
+  const sharedState = loadSharedAppState();
+  const initialState = sharedState ?? loadStoredAppState();
+  const state: StickerData = { ...initialState.sticker };
+  let highlightPosition = initialState.highlightPosition;
   const template = StickerTemplate.create();
   template.applyAll(state);
   template.mountInto(dom.stickerMount);
@@ -44,6 +49,8 @@ export function bootstrap(): void {
       highlightPosition
     });
   };
+
+  if (sharedState) persistState();
 
   const highlightControl = createHighlightControl({
     template,
@@ -118,6 +125,21 @@ export function bootstrap(): void {
     announce(dom, "Tracking codes randomized.");
   });
 
+  dom.shareLinkBtn.addEventListener("click", async () => {
+    const shareUrl = buildShareUrl({
+      sticker: state,
+      highlightPosition
+    });
+
+    try {
+      await copyText(shareUrl);
+      announce(dom, "Share link copied.");
+    } catch {
+      window.prompt("Copy this link:", shareUrl);
+      announce(dom, "Share link ready.");
+    }
+  });
+
   bindExport(dom, state, template);
 }
 
@@ -183,4 +205,12 @@ async function runExport(
 
 function announce(dom: AppDom, message: string): void {
   dom.appStatus.textContent = message;
+}
+
+async function copyText(text: string): Promise<void> {
+  if (!navigator.clipboard?.writeText) {
+    throw new Error("Clipboard unavailable");
+  }
+
+  await navigator.clipboard.writeText(text);
 }

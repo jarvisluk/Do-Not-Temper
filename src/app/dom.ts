@@ -24,6 +24,7 @@ export const APP_SELECTORS = {
   btnTrack: "#btn-track",
   btnReset: "#btn-reset",
   btnRandomize: "#btn-randomize",
+  btnShareLink: "#btn-share-link",
   btnDownloadSvg: "#btn-download-svg",
   btnDownloadPng: "#btn-download-png",
   btnDownloadPdf: "#btn-download-pdf"
@@ -44,6 +45,7 @@ export interface AppDom {
   trackBtn: HTMLButtonElement;
   resetBtn: HTMLButtonElement;
   randomizeBtn: HTMLButtonElement;
+  shareLinkBtn: HTMLButtonElement;
   downloadSvgBtn: HTMLButtonElement;
   downloadPngBtn: HTMLButtonElement;
   downloadPdfBtn: HTMLButtonElement;
@@ -64,6 +66,7 @@ export function queryAppDom(): AppDom {
     trackBtn: $<HTMLButtonElement>(APP_SELECTORS.btnTrack),
     resetBtn: $<HTMLButtonElement>(APP_SELECTORS.btnReset),
     randomizeBtn: $<HTMLButtonElement>(APP_SELECTORS.btnRandomize),
+    shareLinkBtn: $<HTMLButtonElement>(APP_SELECTORS.btnShareLink),
     downloadSvgBtn: $<HTMLButtonElement>(APP_SELECTORS.btnDownloadSvg),
     downloadPngBtn: $<HTMLButtonElement>(APP_SELECTORS.btnDownloadPng),
     downloadPdfBtn: $<HTMLButtonElement>(APP_SELECTORS.btnDownloadPdf)
