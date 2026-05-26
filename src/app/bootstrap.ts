@@ -9,6 +9,7 @@ import { randomHex } from "@/utils/random";
 import {
   applyStateToControls,
   bindTextFields,
+  createAccentColorList,
   createSwatchList
 } from "./bindControls";
 import { queryAppDom, type AppDom } from "./dom";
@@ -46,6 +47,12 @@ export function bootstrap(): void {
     template,
     onChange: (themeId) => applyThemeToChrome(themeId)
   });
+  const accentColorList = createAccentColorList({
+    container: dom.accentList,
+    customInput: dom.accentColorInput,
+    state,
+    template
+  });
 
   applyThemeToChrome(state.gradientId);
 
@@ -65,6 +72,7 @@ export function bootstrap(): void {
     highlightControl.stopTracking();
     highlightControl.setManualPosition(0.5);
     swatchList.syncSelection();
+    accentColorList.syncSelection();
     applyThemeToChrome(state.gradientId);
     template.applyAll(state);
   });

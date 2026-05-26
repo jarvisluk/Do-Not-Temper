@@ -8,7 +8,6 @@ import { renderSvgWithBlendModes } from "jspdf-blend-modes";
 import type { StickerTemplate } from "@/sticker/template";
 import { STICKER_VIEWBOX } from "@/sticker/svg";
 import { SVG_SELECTORS } from "@/sticker/selectors";
-import { DOTTY_TTF_BASE64, OCR_TTF_BASE64 } from "@/fonts";
 
 /** PDF page height in points; width is derived from the sticker aspect ratio. */
 const PDF_PAGE_HEIGHT_PT = 6 * 72;
@@ -47,6 +46,8 @@ export async function downloadPdf(
     format: [pageWidthPt, PDF_PAGE_HEIGHT_PT],
     compress: true
   });
+
+  const { DOTTY_TTF_BASE64, OCR_TTF_BASE64 } = await import("@/fonts");
 
   pdf.addFileToVFS("DOTTY.ttf", DOTTY_TTF_BASE64);
   pdf.addFont("DOTTY.ttf", "DOTTY", "normal");

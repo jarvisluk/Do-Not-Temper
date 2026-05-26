@@ -99,6 +99,7 @@ export class StickerTemplate {
     const node = this.root.querySelector<SVGPathElement>(SVG_SELECTORS.accent);
     if (node) {
       node.setAttribute("fill", color);
+      node.style.fill = color;
     }
   }
 

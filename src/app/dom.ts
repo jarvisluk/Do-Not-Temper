@@ -18,6 +18,8 @@ export const APP_SELECTORS = {
   inputTrack2: "#input-track2",
   inputHighlight: "#input-highlight",
   inputGradient: "#input-gradient",
+  inputAccent: "#input-accent",
+  inputAccentCustom: "#input-accent-custom",
   btnTrack: "#btn-track",
   btnReset: "#btn-reset",
   btnRandomize: "#btn-randomize",
@@ -35,6 +37,8 @@ export interface AppDom {
   track2Input: HTMLInputElement;
   highlightSlider: HTMLInputElement;
   gradientList: HTMLDivElement;
+  accentList: HTMLDivElement;
+  accentColorInput: HTMLInputElement;
   trackBtn: HTMLButtonElement;
   resetBtn: HTMLButtonElement;
   randomizeBtn: HTMLButtonElement;
@@ -52,6 +56,8 @@ export function queryAppDom(): AppDom {
     track2Input: $<HTMLInputElement>(APP_SELECTORS.inputTrack2),
     highlightSlider: $<HTMLInputElement>(APP_SELECTORS.inputHighlight),
     gradientList: $<HTMLDivElement>(APP_SELECTORS.inputGradient),
+    accentList: $<HTMLDivElement>(APP_SELECTORS.inputAccent),
+    accentColorInput: $<HTMLInputElement>(APP_SELECTORS.inputAccentCustom),
     trackBtn: $<HTMLButtonElement>(APP_SELECTORS.btnTrack),
     resetBtn: $<HTMLButtonElement>(APP_SELECTORS.btnReset),
     randomizeBtn: $<HTMLButtonElement>(APP_SELECTORS.btnRandomize),

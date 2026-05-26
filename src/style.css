@@ -354,6 +354,52 @@ body {
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
 }
 
+.swatch-chip-solid {
+  background: var(--swatch-color, var(--sticker-red));
+}
+
+.color-picker-field {
+  margin-top: -2px;
+}
+
+.color-picker {
+  appearance: none;
+  width: 100%;
+  min-height: 42px;
+  padding: 4px;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-field);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.color-picker:hover {
+  border-color: var(--field-border-hover);
+}
+
+.color-picker:focus-visible {
+  outline: none;
+  background: var(--panel-bg);
+  border-color: var(--field-border-focus);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
+.color-picker::-moz-color-swatch {
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
 /* ---------- Footer ---------- */
 .controls-footer {
   margin-top: 20px;
