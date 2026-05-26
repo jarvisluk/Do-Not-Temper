@@ -14,6 +14,7 @@ import {
 } from "./bindControls";
 import { queryAppDom, type AppDom } from "./dom";
 import { createHighlightControl } from "./highlightControl";
+import { prefersReducedMotion } from "./motion";
 import {
   clearStoredAppState,
   loadStoredAppState,
@@ -39,6 +40,7 @@ export function bootstrap(): void {
   const initialState = sharedState ?? loadStoredAppState();
   const state: StickerData = { ...initialState.sticker };
   let highlightPosition = initialState.highlightPosition;
+  const reduceMotion = prefersReducedMotion();
   const template = StickerTemplate.create();
   template.applyAll(state);
   template.mountInto(dom.stickerMount);
@@ -67,6 +69,8 @@ export function bootstrap(): void {
   if (highlightPosition !== null) {
     dom.highlightSlider.value = String(Math.round(highlightPosition * 100));
     highlightControl.setManualPosition(highlightPosition);
+  } else if (reduceMotion) {
+    template.setHighlightPosition(0.5);
   }
   bindTextFields(dom, state, template, persistState);
 
@@ -109,7 +113,7 @@ export function bootstrap(): void {
     accentColorList.syncSelection();
     applyThemeToChrome(state.gradientId);
     template.applyAll(state);
-    template.setHighlightPosition(null);
+    template.setHighlightPosition(reduceMotion ? 0.5 : null);
     announce(dom, "Sticker reset to defaults.");
   });
 
