@@ -40,7 +40,8 @@ export function applyStateToControls(dom: AppDom, state: StickerData): void {
 export function bindTextFields(
   dom: AppDom,
   state: StickerData,
-  template: StickerTemplate
+  template: StickerTemplate,
+  onChange?: () => void
 ): void {
   for (const field of TEXT_FIELDS) {
     const el = field.input(dom);
@@ -48,6 +49,7 @@ export function bindTextFields(
       const value = el.value;
       state[field.key] = value;
       field.apply(template, value);
+      onChange?.();
     });
   }
 }
@@ -122,10 +124,11 @@ export interface AccentColorListDeps {
   customInput: HTMLInputElement;
   state: StickerData;
   template: StickerTemplate;
+  onChange?: () => void;
 }
 
 export function createAccentColorList(deps: AccentColorListDeps): SwatchList {
-  const { container, customInput, state, template } = deps;
+  const { container, customInput, state, template, onChange } = deps;
   const buttons: HTMLButtonElement[] = [];
 
   for (const preset of ACCENT_PRESETS) {
@@ -159,6 +162,7 @@ export function createAccentColorList(deps: AccentColorListDeps): SwatchList {
     customInput.value = color.toLowerCase();
     template.setAccentColor(color);
     syncSelection();
+    onChange?.();
   }
 
   function syncSelection(): void {

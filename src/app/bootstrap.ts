@@ -14,44 +14,70 @@ import {
 } from "./bindControls";
 import { queryAppDom, type AppDom } from "./dom";
 import { createHighlightControl } from "./highlightControl";
+import {
+  clearStoredAppState,
+  loadStoredAppState,
+  saveStoredAppState
+} from "./storage";
 import { applyThemeToChrome } from "./themeChrome";
 
 /**
  * Wires the page together once `index.html` is parsed:
  *  - mounts the sticker SVG into `#sticker-mount`
- *  - hydrates form controls from `DEFAULT_DATA`
+ *  - hydrates form controls from the last saved local state, falling back to defaults
  *  - binds all input events, swatch clicks, and toolbar buttons
  *
  * Bootstrap is intentionally synchronous; no async work runs at import time.
  */
 export function bootstrap(): void {
   const dom = queryAppDom();
-  const state: StickerData = { ...DEFAULT_DATA };
+  const storedState = loadStoredAppState();
+  const state: StickerData = { ...storedState.sticker };
+  let highlightPosition = storedState.highlightPosition;
   const template = StickerTemplate.create();
   template.applyAll(state);
   template.mountInto(dom.stickerMount);
+
+  const persistState = (): void => {
+    saveStoredAppState({
+      sticker: state,
+      highlightPosition
+    });
+  };
 
   const highlightControl = createHighlightControl({
     template,
     mount: dom.stickerMount,
     trackBtn: dom.trackBtn,
-    slider: dom.highlightSlider
+    slider: dom.highlightSlider,
+    onPositionChange: (position) => {
+      highlightPosition = position;
+      persistState();
+    }
   });
 
   applyStateToControls(dom, state);
-  bindTextFields(dom, state, template);
+  if (highlightPosition !== null) {
+    dom.highlightSlider.value = String(Math.round(highlightPosition * 100));
+    highlightControl.setManualPosition(highlightPosition);
+  }
+  bindTextFields(dom, state, template, persistState);
 
   const swatchList = createSwatchList({
     container: dom.gradientList,
     state,
     template,
-    onChange: (themeId) => applyThemeToChrome(themeId)
+    onChange: (themeId) => {
+      applyThemeToChrome(themeId);
+      persistState();
+    }
   });
   const accentColorList = createAccentColorList({
     container: dom.accentList,
     customInput: dom.accentColorInput,
     state,
-    template
+    template,
+    onChange: persistState
   });
 
   applyThemeToChrome(state.gradientId);
@@ -67,14 +93,15 @@ export function bootstrap(): void {
 
   dom.resetBtn.addEventListener("click", () => {
     Object.assign(state, DEFAULT_DATA);
+    highlightPosition = null;
+    clearStoredAppState();
     applyStateToControls(dom, state);
-    dom.highlightSlider.value = "50";
-    highlightControl.stopTracking();
-    highlightControl.setManualPosition(0.5);
+    highlightControl.reset();
     swatchList.syncSelection();
     accentColorList.syncSelection();
     applyThemeToChrome(state.gradientId);
     template.applyAll(state);
+    template.setHighlightPosition(null);
   });
 
   dom.randomizeBtn.addEventListener("click", () => {
@@ -85,6 +112,7 @@ export function bootstrap(): void {
     template.setSerial(state.serial);
     template.setTrack1(state.track1);
     template.setTrack2(state.track2);
+    persistState();
   });
 
   bindExport(dom, state, template);
