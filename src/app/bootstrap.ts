@@ -103,6 +103,7 @@ export function bootstrap(): void {
     applyThemeToChrome(state.gradientId);
     template.applyAll(state);
     template.setHighlightPosition(null);
+    announce(dom, "Sticker reset to defaults.");
   });
 
   dom.randomizeBtn.addEventListener("click", () => {
@@ -114,6 +115,7 @@ export function bootstrap(): void {
     template.setTrack1(state.track1);
     template.setTrack2(state.track2);
     persistState();
+    announce(dom, "Tracking codes randomized.");
   });
 
   bindExport(dom, state, template);
@@ -125,25 +127,37 @@ function bindExport(
   template: StickerTemplate
 ): void {
   dom.downloadSvgBtn.addEventListener("click", async (event) => {
-    await runExport(event.currentTarget as HTMLButtonElement, "SVG", async () => {
-      downloadSvg(template, buildFilename(state.title, "svg"));
-    });
+    await runExport(
+      dom,
+      event.currentTarget as HTMLButtonElement,
+      "SVG",
+      async () => {
+        downloadSvg(template, buildFilename(state.title, "svg"));
+      }
+    );
   });
 
   dom.downloadPngBtn.addEventListener("click", async (event) => {
-    await runExport(event.currentTarget as HTMLButtonElement, "PNG", () =>
-      downloadPng(template, buildFilename(state.title, "png"))
+    await runExport(
+      dom,
+      event.currentTarget as HTMLButtonElement,
+      "PNG",
+      () => downloadPng(template, buildFilename(state.title, "png"))
     );
   });
 
   dom.downloadPdfBtn.addEventListener("click", async (event) => {
-    await runExport(event.currentTarget as HTMLButtonElement, "PDF", () =>
-      downloadPdf(template, buildFilename(state.title, "pdf"))
+    await runExport(
+      dom,
+      event.currentTarget as HTMLButtonElement,
+      "PDF",
+      () => downloadPdf(template, buildFilename(state.title, "pdf"))
     );
   });
 }
 
 async function runExport(
+  dom: AppDom,
   btn: HTMLButtonElement,
   label: string,
   task: () => Promise<void>
@@ -152,14 +166,21 @@ async function runExport(
   btn.disabled = true;
   btn.setAttribute("aria-busy", "true");
   btn.textContent = "Rendering…";
+  announce(dom, `Rendering ${label}.`);
   try {
     await task();
+    announce(dom, `${label} export ready.`);
   } catch (err) {
     console.error(err);
+    announce(dom, `${label} export failed.`);
     alert(`Failed to export ${label}. Please try again.`);
   } finally {
     btn.disabled = false;
     btn.removeAttribute("aria-busy");
     btn.textContent = originalLabel;
   }
+}
+
+function announce(dom: AppDom, message: string): void {
+  dom.appStatus.textContent = message;
 }

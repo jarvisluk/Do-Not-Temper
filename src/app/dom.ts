@@ -11,6 +11,7 @@ export function $<T extends HTMLElement>(sel: string): T {
 }
 
 export const APP_SELECTORS = {
+  appStatus: "#app-status",
   stickerMount: "#sticker-mount",
   inputTitle: "#input-title",
   inputSerial: "#input-serial",
@@ -30,6 +31,7 @@ export const APP_SELECTORS = {
 
 /** Bundle of DOM references the bootstrap wires up once and passes around. */
 export interface AppDom {
+  appStatus: HTMLElement;
   stickerMount: HTMLElement;
   titleInput: HTMLInputElement;
   serialInput: HTMLInputElement;
@@ -49,6 +51,7 @@ export interface AppDom {
 
 export function queryAppDom(): AppDom {
   return {
+    appStatus: $(APP_SELECTORS.appStatus),
     stickerMount: $(APP_SELECTORS.stickerMount),
     titleInput: $<HTMLInputElement>(APP_SELECTORS.inputTitle),
     serialInput: $<HTMLInputElement>(APP_SELECTORS.inputSerial),
