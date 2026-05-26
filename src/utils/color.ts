@@ -13,8 +13,9 @@ export interface Rgb {
 }
 
 export function parseHex(hex: string): Rgb | null {
-  const cleaned = hex.replace("#", "");
-  if (cleaned.length !== 6) return null;
+  const match = hex.match(/^#?([0-9a-f]{6})$/i);
+  if (!match) return null;
+  const cleaned = match[1];
   const r = parseInt(cleaned.slice(0, 2), 16);
   const g = parseInt(cleaned.slice(2, 4), 16);
   const b = parseInt(cleaned.slice(4, 6), 16);
@@ -34,7 +35,7 @@ export function shadeHex(hex: string, amount: number): string {
   const rgb = parseHex(hex);
   if (!rgb) return hex;
   const target = amount >= 0 ? 255 : 0;
-  const ratio = Math.abs(amount);
+  const ratio = Math.min(1, Math.abs(amount));
   const shade = (c: number): number => Math.round(c + (target - c) * ratio);
   return `#${toHexByte(shade(rgb.r))}${toHexByte(shade(rgb.g))}${toHexByte(shade(rgb.b))}`;
 }

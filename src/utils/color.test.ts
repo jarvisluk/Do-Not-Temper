@@ -14,12 +14,15 @@ describe("color helpers", () => {
     expect(parseHex("#0A1b2C")).toEqual({ r: 10, g: 27, b: 44 });
     expect(parseHex("0A1B2C")).toEqual({ r: 10, g: 27, b: 44 });
     expect(parseHex("#123")).toBeNull();
+    expect(parseHex("12#3456")).toBeNull();
     expect(parseHex("#zzzzzz")).toBeNull();
   });
 
   it("shades, lightens, and formats colors predictably", () => {
     expect(shadeHex("#808080", 0.5)).toBe("#c0c0c0");
     expect(shadeHex("#808080", -0.5)).toBe("#404040");
+    expect(shadeHex("#808080", 2)).toBe("#ffffff");
+    expect(shadeHex("#808080", -2)).toBe("#000000");
     expect(lightenColor("#000000", 0.2)).toBe("#333333");
     expect(hexToRgba("#112233", 0.25)).toBe("rgba(17, 34, 51, 0.25)");
     expect(shadeHex("bad", 0.5)).toBe("bad");
