@@ -94,9 +94,10 @@ export function bootstrap(): void {
   dom.resetBtn.addEventListener("click", () => {
     Object.assign(state, DEFAULT_DATA);
     highlightPosition = null;
-    clearStoredAppState();
     applyStateToControls(dom, state);
     highlightControl.reset();
+    // `reset()` notifies persistence hooks, so clear after it to leave no saved draft.
+    clearStoredAppState();
     swatchList.syncSelection();
     accentColorList.syncSelection();
     applyThemeToChrome(state.gradientId);
@@ -123,8 +124,10 @@ function bindExport(
   state: StickerData,
   template: StickerTemplate
 ): void {
-  dom.downloadSvgBtn.addEventListener("click", () => {
-    downloadSvg(template, buildFilename(state.title, "svg"));
+  dom.downloadSvgBtn.addEventListener("click", async (event) => {
+    await runExport(event.currentTarget as HTMLButtonElement, "SVG", async () => {
+      downloadSvg(template, buildFilename(state.title, "svg"));
+    });
   });
 
   dom.downloadPngBtn.addEventListener("click", async (event) => {
@@ -147,6 +150,7 @@ async function runExport(
 ): Promise<void> {
   const originalLabel = btn.textContent;
   btn.disabled = true;
+  btn.setAttribute("aria-busy", "true");
   btn.textContent = "Rendering…";
   try {
     await task();
@@ -155,6 +159,7 @@ async function runExport(
     alert(`Failed to export ${label}. Please try again.`);
   } finally {
     btn.disabled = false;
+    btn.removeAttribute("aria-busy");
     btn.textContent = originalLabel;
   }
 }

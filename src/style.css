@@ -229,6 +229,12 @@ body {
   transform: translateY(1px);
 }
 
+.btn:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+}
+
 .btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
