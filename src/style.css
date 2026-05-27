@@ -203,7 +203,7 @@ body {
 
 .switch-track::after {
   position: absolute;
-  top: 3px;
+  top: 50%;
   left: 3px;
   width: 16px;
   height: 16px;
@@ -212,6 +212,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  transform: translateY(-50%);
   transition: transform 0.15s ease;
 }
 
@@ -222,7 +223,7 @@ body {
 }
 
 .switch-input:checked + .switch-track::after {
-  transform: translateX(18px);
+  transform: translate(18px, -50%);
 }
 
 .switch-input:focus-visible + .switch-track {
