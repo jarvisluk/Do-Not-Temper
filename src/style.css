@@ -162,6 +162,10 @@ body {
   margin: 0;
 }
 
+.control-group:has(.accent-panel[hidden]) .control-group-header {
+  margin-bottom: 0;
+}
+
 .accent-toggle {
   position: relative;
   display: inline-flex;
