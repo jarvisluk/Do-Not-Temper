@@ -1,4 +1,9 @@
-import { GRADIENT_THEMES, type GradientId, type StickerData } from "@/sticker/data";
+import {
+  ACCENT_PRESETS,
+  GRADIENT_THEMES,
+  type GradientId,
+  type StickerData
+} from "@/sticker/data";
 import type { StickerTemplate } from "@/sticker/template";
 import type { AppDom } from "./dom";
 
@@ -24,6 +29,7 @@ export function applyStateToControls(dom: AppDom, state: StickerData): void {
   for (const field of TEXT_FIELDS) {
     field.input(dom).value = state[field.key];
   }
+  dom.accentColorInput.value = state.accentColor.toLowerCase();
 }
 
 /**
@@ -34,7 +40,8 @@ export function applyStateToControls(dom: AppDom, state: StickerData): void {
 export function bindTextFields(
   dom: AppDom,
   state: StickerData,
-  template: StickerTemplate
+  template: StickerTemplate,
+  onChange?: () => void
 ): void {
   for (const field of TEXT_FIELDS) {
     const el = field.input(dom);
@@ -42,6 +49,7 @@ export function bindTextFields(
       const value = el.value;
       state[field.key] = value;
       field.apply(template, value);
+      onChange?.();
     });
   }
 }
@@ -67,6 +75,7 @@ export interface SwatchListDeps {
 export function createSwatchList(deps: SwatchListDeps): SwatchList {
   const { container, state, template, onChange } = deps;
   const buttons = new Map<GradientId, HTMLButtonElement>();
+  const orderedButtons: HTMLButtonElement[] = [];
 
   for (const theme of GRADIENT_THEMES) {
     const btn = document.createElement("button");
@@ -93,8 +102,10 @@ export function createSwatchList(deps: SwatchListDeps): SwatchList {
     });
     container.appendChild(btn);
     buttons.set(theme.id, btn);
+    orderedButtons.push(btn);
   }
 
+  bindRovingRadioKeys(orderedButtons);
   function syncSelection(): void {
     for (const [id, btn] of buttons) {
       const selected = id === state.gradientId;
@@ -106,4 +117,102 @@ export function createSwatchList(deps: SwatchListDeps): SwatchList {
 
   syncSelection();
   return { syncSelection };
+}
+
+export interface AccentColorListDeps {
+  container: HTMLDivElement;
+  customInput: HTMLInputElement;
+  state: StickerData;
+  template: StickerTemplate;
+  onChange?: () => void;
+}
+
+export function createAccentColorList(deps: AccentColorListDeps): SwatchList {
+  const { container, customInput, state, template, onChange } = deps;
+  const buttons: HTMLButtonElement[] = [];
+
+  for (const preset of ACCENT_PRESETS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "swatch swatch-accent";
+    btn.dataset.accentColor = preset.color;
+    btn.setAttribute("role", "radio");
+    btn.setAttribute("aria-label", preset.label);
+    btn.title = preset.label;
+    btn.style.setProperty("--swatch-color", preset.color);
+    btn.innerHTML = `
+      <span class="swatch-chip swatch-chip-solid" aria-hidden="true"></span>
+      <span class="swatch-label">${preset.label}</span>
+    `;
+    btn.addEventListener("click", () => {
+      applyAccentColor(preset.color);
+    });
+    container.appendChild(btn);
+    buttons.push(btn);
+  }
+
+  customInput.addEventListener("input", () => {
+    applyAccentColor(customInput.value);
+  });
+
+  bindRovingRadioKeys(buttons);
+
+  function applyAccentColor(color: string): void {
+    state.accentColor = color;
+    customInput.value = color.toLowerCase();
+    template.setAccentColor(color);
+    syncSelection();
+    onChange?.();
+  }
+
+  function syncSelection(): void {
+    const selectedIndex = buttons.findIndex(
+      (btn) => normalizeHex(btn.dataset.accentColor ?? "") === normalizeHex(state.accentColor)
+    );
+
+    buttons.forEach((btn, index) => {
+      const selected = index === selectedIndex;
+      btn.classList.toggle("is-selected", selected);
+      btn.setAttribute("aria-checked", selected ? "true" : "false");
+      btn.tabIndex = selected || (selectedIndex === -1 && index === 0) ? 0 : -1;
+    });
+  }
+
+  customInput.value = state.accentColor.toLowerCase();
+  syncSelection();
+  return { syncSelection };
+}
+
+function normalizeHex(color: string): string {
+  return color.trim().toLowerCase();
+}
+
+function bindRovingRadioKeys(buttons: readonly HTMLButtonElement[]): void {
+  for (const btn of buttons) {
+    btn.addEventListener("keydown", (event) => {
+      const currentIndex = buttons.indexOf(btn);
+      let nextIndex = currentIndex;
+
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+        nextIndex = (currentIndex + 1) % buttons.length;
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+        nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+      } else if (event.key === "Home") {
+        nextIndex = 0;
+      } else if (event.key === "End") {
+        nextIndex = buttons.length - 1;
+      } else if (event.key === " " || event.key === "Enter") {
+        event.preventDefault();
+        btn.click();
+        return;
+      } else {
+        return;
+      }
+
+      event.preventDefault();
+      const nextButton = buttons[nextIndex];
+      nextButton.focus();
+      nextButton.click();
+    });
+  }
 }

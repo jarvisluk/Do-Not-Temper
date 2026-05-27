@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "deploy": "npm run build && wrangler pages deploy dist --project-name do-not-tamper",
     "cf:dev": "npm run build && wrangler pages dev dist",
+    "test": "vitest run",
+    "check": "npm test && npm run lint && npm run build",
     "lint": "npm run lint:types && npm run lint:css && npm run lint:unused",
     "lint:types": "tsc --noEmit",
     "lint:css": "stylelint \"src/**/*.css\"",
@@ -23,7 +25,8 @@
     "stylelint-config-standard": "^40.0.0",
     "stylelint-declaration-strict-value": "^1.11.1",
     "typescript": "^5.6.3",
-    "vite": "^5.4.10",
+    "vite": "^8.0.14",
+    "vitest": "^4.1.7",
     "wawoff2": "^2.0.1",
     "wrangler": "^4.84.0"
   },

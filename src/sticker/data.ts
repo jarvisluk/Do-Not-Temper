@@ -31,6 +31,20 @@ export const GRADIENT_THEMES: readonly GradientTheme[] = [
   { id: "ice", label: "Ice", stops: ["#3d7dbf", "#c8e6ff", "#1b3d66", "#c8e6ff"] }
 ];
 
+export interface AccentPreset {
+  label: string;
+  color: string;
+}
+
+export const ACCENT_PRESETS: readonly AccentPreset[] = [
+  { label: "Warning red", color: "#FF0000" },
+  { label: "Signal orange", color: "#F97316" },
+  { label: "Hazard yellow", color: "#FACC15" },
+  { label: "Ops black", color: "#111111" },
+  { label: "Porter blue", color: "#2563EB" },
+  { label: "Chiral violet", color: "#7C3AED" }
+];
+
 export interface StickerData {
   title: string;
   serial: string;

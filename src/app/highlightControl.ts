@@ -7,6 +7,8 @@ export interface HighlightControl {
   startTracking(): void;
   /** Exits tracking mode without locking; restores the idle button label. */
   stopTracking(): void;
+  /** Restores the SVG's native animated shine and resets the slider center. */
+  reset(): void;
 }
 
 export interface HighlightControlDeps {
@@ -14,6 +16,7 @@ export interface HighlightControlDeps {
   mount: HTMLElement;
   trackBtn: HTMLButtonElement;
   slider: HTMLInputElement;
+  onPositionChange?: (position: number | null) => void;
 }
 
 /**
@@ -23,7 +26,7 @@ export interface HighlightControlDeps {
  * The controller is fully closed over `deps`; no module-level state.
  */
 export function createHighlightControl(deps: HighlightControlDeps): HighlightControl {
-  const { template, mount, trackBtn, slider } = deps;
+  const { template, mount, trackBtn, slider, onPositionChange } = deps;
 
   let targetT: number | null = null;
   let currentT = 0.5;
@@ -68,6 +71,7 @@ export function createHighlightControl(deps: HighlightControlDeps): HighlightCon
       currentT = targetT;
       template.setHighlightPosition(currentT);
       slider.value = String(Math.round(currentT * 100));
+      onPositionChange?.(currentT);
     }
   };
 
@@ -99,6 +103,7 @@ export function createHighlightControl(deps: HighlightControlDeps): HighlightCon
       currentT = targetT;
       pointerActive = false;
       template.setHighlightPosition(targetT);
+      onPositionChange?.(targetT);
     },
     startTracking() {
       tracking = true;
@@ -108,6 +113,16 @@ export function createHighlightControl(deps: HighlightControlDeps): HighlightCon
     stopTracking() {
       tracking = false;
       setButtonActive(false);
+    },
+    reset() {
+      tracking = false;
+      pointerActive = false;
+      targetT = null;
+      currentT = 0.5;
+      slider.value = "50";
+      setButtonActive(false);
+      template.setHighlightPosition(null);
+      onPositionChange?.(null);
     }
   };
 }

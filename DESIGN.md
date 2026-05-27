@@ -188,6 +188,16 @@ components:
   swatch-selected-ring:
     backgroundColor: "{colors.selected-ring}"
 
+  accent-swatch-chip:
+    backgroundColor: "{colors.accent}"
+    rounded: "{rounded.sm}"
+    size: 26px
+
+  accent-color-input:
+    backgroundColor: "{colors.field}"
+    rounded: "{rounded.DEFAULT}"
+    padding: 4px
+
   preview-stage:
     backgroundColor: transparent
     rounded: "{rounded.lg}"

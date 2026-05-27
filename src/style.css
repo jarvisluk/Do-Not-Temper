@@ -57,6 +57,7 @@
   --radius-chip: 14px;
   --radius-track: 3px;
   --radius-btn: 12px;
+  --radius-pill: 999px;
 
   /* Shadows */
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
@@ -69,6 +70,18 @@
 
 * {
   box-sizing: border-box;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 html,
@@ -135,6 +148,95 @@ body {
   background: transparent;
   padding: 0;
   display: block;
+}
+
+.control-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.control-group-header h2 {
+  margin: 0;
+}
+
+.control-group:has(.accent-panel[hidden]) .control-group-header {
+  margin-bottom: 0;
+}
+
+.accent-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+.accent-toggle-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.switch-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch-track {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 24px;
+  flex: 0 0 auto;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-pill);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.switch-track::after {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  content: "";
+  background: var(--panel-bg);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  transform: translateY(-50%);
+  transition: transform 0.15s ease;
+}
+
+.switch-input:checked + .switch-track {
+  background: var(--theme-solid);
+  border-color: transparent;
+  box-shadow: var(--theme-shadow);
+}
+
+.switch-input:checked + .switch-track::after {
+  transform: translate(18px, -50%);
+}
+
+.switch-input:focus-visible + .switch-track {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+}
+
+.accent-panel[hidden] {
+  display: none;
 }
 
 /* ---------- Fields ---------- */
@@ -227,6 +329,12 @@ body {
 
 .btn:active {
   transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
 }
 
 .btn:focus-visible {
@@ -352,6 +460,52 @@ body {
 .swatch:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
+}
+
+.swatch-chip-solid {
+  background: var(--swatch-color, var(--sticker-red));
+}
+
+.color-picker-field {
+  margin-top: -2px;
+}
+
+.color-picker {
+  appearance: none;
+  width: 100%;
+  min-height: 42px;
+  padding: 4px;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-field);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.color-picker:hover {
+  border-color: var(--field-border-hover);
+}
+
+.color-picker:focus-visible {
+  outline: none;
+  background: var(--panel-bg);
+  border-color: var(--field-border-focus);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
+.color-picker::-moz-color-swatch {
+  border: 0;
+  border-radius: var(--radius-sm);
 }
 
 /* ---------- Footer ---------- */
@@ -529,6 +683,21 @@ body {
 @keyframes pulse-track {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn-track.is-tracking {
+    animation: none;
+  }
 }
 
 /* ---------- Responsive ---------- */
