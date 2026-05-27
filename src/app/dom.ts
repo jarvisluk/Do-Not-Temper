@@ -19,7 +19,9 @@ export const APP_SELECTORS = {
   inputTrack2: "#input-track2",
   inputHighlight: "#input-highlight",
   inputGradient: "#input-gradient",
+  inputAccentEnabled: "#input-accent-enabled",
   inputAccent: "#input-accent",
+  accentPanel: "#accent-color-panel",
   inputAccentCustom: "#input-accent-custom",
   btnTrack: "#btn-track",
   btnReset: "#btn-reset",
@@ -40,7 +42,9 @@ export interface AppDom {
   track2Input: HTMLInputElement;
   highlightSlider: HTMLInputElement;
   gradientList: HTMLDivElement;
+  accentEnabledInput: HTMLInputElement;
   accentList: HTMLDivElement;
+  accentPanel: HTMLDivElement;
   accentColorInput: HTMLInputElement;
   trackBtn: HTMLButtonElement;
   resetBtn: HTMLButtonElement;
@@ -61,7 +65,9 @@ export function queryAppDom(): AppDom {
     track2Input: $<HTMLInputElement>(APP_SELECTORS.inputTrack2),
     highlightSlider: $<HTMLInputElement>(APP_SELECTORS.inputHighlight),
     gradientList: $<HTMLDivElement>(APP_SELECTORS.inputGradient),
+    accentEnabledInput: $<HTMLInputElement>(APP_SELECTORS.inputAccentEnabled),
     accentList: $<HTMLDivElement>(APP_SELECTORS.inputAccent),
+    accentPanel: $<HTMLDivElement>(APP_SELECTORS.accentPanel),
     accentColorInput: $<HTMLInputElement>(APP_SELECTORS.inputAccentCustom),
     trackBtn: $<HTMLButtonElement>(APP_SELECTORS.btnTrack),
     resetBtn: $<HTMLButtonElement>(APP_SELECTORS.btnReset),

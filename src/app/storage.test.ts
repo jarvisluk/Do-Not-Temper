@@ -57,6 +57,7 @@ describe("app storage", () => {
   it("falls back to defaults without browser storage", () => {
     expect(loadStoredAppState()).toEqual({
       sticker: DEFAULT_DATA,
+      accentColorEnabled: false,
       highlightPosition: null
     });
   });
@@ -72,6 +73,7 @@ describe("app storage", () => {
         accentColor: "#2563EB",
         gradientId: "holographic"
       },
+      accentColorEnabled: true,
       highlightPosition: 0.82
     };
 
@@ -94,6 +96,7 @@ describe("app storage", () => {
           accentColor: "not-a-color",
           gradientId: "neon"
         },
+        accentColorEnabled: "sometimes",
         highlightPosition: 4
       })
     );
@@ -107,6 +110,7 @@ describe("app storage", () => {
         accentColor: DEFAULT_DATA.accentColor,
         gradientId: DEFAULT_DATA.gradientId
       },
+      accentColorEnabled: false,
       highlightPosition: 1
     });
   });
@@ -115,6 +119,7 @@ describe("app storage", () => {
     const storage = useStorage(new MemoryStorage());
     saveStoredAppState({
       sticker: { ...DEFAULT_DATA, title: "Saved" },
+      accentColorEnabled: false,
       highlightPosition: 0.25
     });
 
@@ -124,11 +129,13 @@ describe("app storage", () => {
     useStorage(new ThrowingStorage());
     expect(loadStoredAppState()).toEqual({
       sticker: DEFAULT_DATA,
+      accentColorEnabled: false,
       highlightPosition: null
     });
     expect(() =>
       saveStoredAppState({
         sticker: { ...DEFAULT_DATA, title: "Ignored" },
+        accentColorEnabled: false,
         highlightPosition: 0.5
       })
     ).not.toThrow();

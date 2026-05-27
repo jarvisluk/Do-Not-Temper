@@ -12,6 +12,7 @@ export type StoredAppState = AppState;
 interface PersistedAppState {
   version: typeof STORAGE_VERSION;
   sticker: StoredAppState["sticker"];
+  accentColorEnabled: StoredAppState["accentColorEnabled"];
   highlightPosition: StoredAppState["highlightPosition"];
 }
 
@@ -45,6 +46,7 @@ export function saveStoredAppState(state: StoredAppState): void {
   const payload: PersistedAppState = {
     version: STORAGE_VERSION,
     sticker: clean.sticker,
+    accentColorEnabled: clean.accentColorEnabled,
     highlightPosition: clean.highlightPosition
   };
 

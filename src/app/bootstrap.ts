@@ -39,15 +39,17 @@ export function bootstrap(): void {
   const sharedState = loadSharedAppState();
   const initialState = sharedState ?? loadStoredAppState();
   const state: StickerData = { ...initialState.sticker };
+  let accentColorEnabled = initialState.accentColorEnabled;
   let highlightPosition = initialState.highlightPosition;
   const reduceMotion = prefersReducedMotion();
   const template = StickerTemplate.create();
-  template.applyAll(state);
+  template.applyAll(getEffectiveStickerData(state, accentColorEnabled));
   template.mountInto(dom.stickerMount);
 
   const persistState = (): void => {
     saveStoredAppState({
       sticker: state,
+      accentColorEnabled,
       highlightPosition
     });
   };
@@ -88,8 +90,12 @@ export function bootstrap(): void {
     customInput: dom.accentColorInput,
     state,
     template,
-    onChange: persistState
+    onChange: () => {
+      if (!accentColorEnabled) return;
+      persistState();
+    }
   });
+  syncAccentControls(dom, state, template, accentColorEnabled);
 
   applyThemeToChrome(state.gradientId);
 
@@ -102,8 +108,16 @@ export function bootstrap(): void {
     highlightControl.startTracking();
   });
 
+  dom.accentEnabledInput.addEventListener("change", () => {
+    accentColorEnabled = dom.accentEnabledInput.checked;
+    syncAccentControls(dom, state, template, accentColorEnabled);
+    persistState();
+    announce(dom, accentColorEnabled ? "Accent color controls enabled." : "Accent color controls hidden.");
+  });
+
   dom.resetBtn.addEventListener("click", () => {
     Object.assign(state, DEFAULT_DATA);
+    accentColorEnabled = false;
     highlightPosition = null;
     applyStateToControls(dom, state);
     highlightControl.reset();
@@ -111,8 +125,9 @@ export function bootstrap(): void {
     clearStoredAppState();
     swatchList.syncSelection();
     accentColorList.syncSelection();
+    syncAccentControls(dom, state, template, accentColorEnabled);
     applyThemeToChrome(state.gradientId);
-    template.applyAll(state);
+    template.applyAll(getEffectiveStickerData(state, accentColorEnabled));
     template.setHighlightPosition(reduceMotion ? 0.5 : null);
     announce(dom, "Sticker reset to defaults.");
   });
@@ -132,6 +147,7 @@ export function bootstrap(): void {
   dom.shareLinkBtn.addEventListener("click", async () => {
     const shareUrl = buildShareUrl({
       sticker: state,
+      accentColorEnabled,
       highlightPosition
     });
 
@@ -226,6 +242,7 @@ function disableControlsDuringExport(dom: AppDom): () => void {
     dom.track1Input,
     dom.track2Input,
     dom.highlightSlider,
+    dom.accentEnabledInput,
     dom.accentColorInput,
     dom.trackBtn,
     dom.resetBtn,
@@ -233,7 +250,8 @@ function disableControlsDuringExport(dom: AppDom): () => void {
     dom.shareLinkBtn,
     dom.downloadSvgBtn,
     dom.downloadPngBtn,
-    dom.downloadPdfBtn
+    dom.downloadPdfBtn,
+    ...Array.from(dom.accentPanel.querySelectorAll<HTMLInputElement | HTMLButtonElement>("button,input"))
   ] as const;
   const previousDisabledState = new Map<HTMLElement, boolean>();
 
@@ -247,4 +265,34 @@ function disableControlsDuringExport(dom: AppDom): () => void {
       if (!wasDisabled) control.removeAttribute("disabled");
     }
   };
+}
+
+function syncAccentControls(
+  dom: AppDom,
+  state: StickerData,
+  template: StickerTemplate,
+  enabled: boolean
+): void {
+  dom.accentEnabledInput.checked = enabled;
+  dom.accentEnabledInput.setAttribute("aria-expanded", enabled ? "true" : "false");
+  dom.accentPanel.hidden = !enabled;
+
+  for (const control of dom.accentPanel.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+    "button,input"
+  )) {
+    control.disabled = !enabled;
+  }
+
+  template.setAccentColor(getEffectiveAccentColor(state, enabled));
+}
+
+function getEffectiveStickerData(state: StickerData, accentColorEnabled: boolean): StickerData {
+  return {
+    ...state,
+    accentColor: getEffectiveAccentColor(state, accentColorEnabled)
+  };
+}
+
+function getEffectiveAccentColor(state: StickerData, accentColorEnabled: boolean): string {
+  return accentColorEnabled ? state.accentColor : DEFAULT_DATA.accentColor;
 }

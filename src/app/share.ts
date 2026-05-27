@@ -9,6 +9,7 @@ const SHARE_KEYS = [
   "track1",
   "track2",
   "accent",
+  "accentEnabled",
   "gradient",
   "highlight"
 ] as const;
@@ -23,6 +24,7 @@ export function buildShareUrl(state: AppState, href = window.location.href): str
   params.set("track1", clean.sticker.track1);
   params.set("track2", clean.sticker.track2);
   params.set("accent", clean.sticker.accentColor.slice(1));
+  params.set("accentEnabled", clean.accentColorEnabled ? "1" : "0");
   params.set("gradient", clean.sticker.gradientId);
 
   if (clean.highlightPosition !== null) {
@@ -51,6 +53,7 @@ export function loadSharedAppState(href = window.location.href): AppState | null
       accentColor: readAccentParam(params.get("accent")),
       gradientId: params.get("gradient")
     },
+    accentColorEnabled: params.get("accentEnabled"),
     highlightPosition: highlightValue
   });
 }

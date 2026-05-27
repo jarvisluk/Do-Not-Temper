@@ -14,6 +14,7 @@ const FIELD_LIMITS = {
 
 export interface AppState {
   sticker: StickerData;
+  accentColorEnabled: boolean;
   /** `null` keeps the SVG's original animated highlight on first load. */
   highlightPosition: number | null;
 }
@@ -21,15 +22,18 @@ export interface AppState {
 export function defaultAppState(): AppState {
   return {
     sticker: { ...DEFAULT_DATA },
+    accentColorEnabled: false,
     highlightPosition: null
   };
 }
 
 export function sanitizeAppState(value: unknown): AppState {
   const record = isRecord(value) ? value : {};
+  const sticker = sanitizeStickerData(record.sticker);
 
   return {
-    sticker: sanitizeStickerData(record.sticker),
+    sticker,
+    accentColorEnabled: sanitizeAccentColorEnabled(record.accentColorEnabled, sticker.accentColor),
     highlightPosition: sanitizeHighlightPosition(record.highlightPosition)
   };
 }
@@ -51,6 +55,13 @@ export function sanitizeHighlightPosition(value: unknown): number | null {
   if (value === null) return null;
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
   return Math.max(0, Math.min(1, value));
+}
+
+function sanitizeAccentColorEnabled(value: unknown, accentColor: string): boolean {
+  if (typeof value === "boolean") return value;
+  if (value === "1" || value === "true") return true;
+  if (value === "0" || value === "false") return false;
+  return accentColor.toUpperCase() !== DEFAULT_DATA.accentColor;
 }
 
 function readBoundedString(value: unknown, fallback: string, maxLength: number): string {

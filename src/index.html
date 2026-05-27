@@ -68,27 +68,43 @@
         </section>
 
         <section class="control-group">
-          <h2>Accent color</h2>
-          <div class="field">
-            <div
-              id="input-accent"
-              class="swatch-list swatch-list-accent"
-              role="radiogroup"
-              aria-label="Accent color"
-              aria-describedby="accent-color-hint"
-            ></div>
-            <span id="accent-color-hint" class="field-hint">Recolors the tamper warning mark</span>
+          <div class="control-group-header">
+            <h2>Accent color</h2>
+            <label class="accent-toggle">
+              <span class="accent-toggle-label">Custom</span>
+              <input
+                id="input-accent-enabled"
+                class="switch-input"
+                type="checkbox"
+                role="switch"
+                aria-controls="accent-color-panel"
+                aria-expanded="false"
+              />
+              <span class="switch-track" aria-hidden="true"></span>
+            </label>
           </div>
-          <label class="field color-picker-field">
-            <span class="field-label">Custom accent</span>
-            <input
-              id="input-accent-custom"
-              class="color-picker"
-              type="color"
-              value="#ff0000"
-              aria-label="Custom accent color"
-            />
-          </label>
+          <div id="accent-color-panel" class="accent-panel" hidden>
+            <div class="field">
+              <div
+                id="input-accent"
+                class="swatch-list swatch-list-accent"
+                role="radiogroup"
+                aria-label="Accent color"
+                aria-describedby="accent-color-hint"
+              ></div>
+              <span id="accent-color-hint" class="field-hint">Recolors the tamper warning mark</span>
+            </div>
+            <label class="field color-picker-field">
+              <span class="field-label">Custom accent</span>
+              <input
+                id="input-accent-custom"
+                class="color-picker"
+                type="color"
+                value="#ff0000"
+                aria-label="Custom accent color"
+              />
+            </label>
+          </div>
         </section>
 
         <section class="control-group">

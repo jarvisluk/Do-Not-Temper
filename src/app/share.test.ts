@@ -17,6 +17,7 @@ describe("share links", () => {
           accentColor: "#2563EB",
           gradientId: "holographic"
         },
+        accentColorEnabled: true,
         highlightPosition: 0.73
       },
       "https://example.com/customizer"
@@ -31,7 +32,25 @@ describe("share links", () => {
         accentColor: "#2563EB",
         gradientId: "holographic"
       },
+      accentColorEnabled: true,
       highlightPosition: 0.73
+    });
+  });
+
+  it("preserves a hidden custom accent choice for later re-enabling", () => {
+    const url = buildShareUrl(
+      {
+        sticker: { ...DEFAULT_DATA, accentColor: "#2563EB" },
+        accentColorEnabled: false,
+        highlightPosition: null
+      },
+      "https://example.com/customizer"
+    );
+
+    expect(loadSharedAppState(url)).toEqual({
+      sticker: { ...DEFAULT_DATA, accentColor: "#2563EB" },
+      accentColorEnabled: false,
+      highlightPosition: null
     });
   });
 
@@ -54,6 +73,7 @@ describe("share links", () => {
         accentColor: DEFAULT_DATA.accentColor,
         gradientId: DEFAULT_DATA.gradientId
       },
+      accentColorEnabled: false,
       highlightPosition: 1
     });
   });
